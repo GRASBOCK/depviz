@@ -1,5 +1,5 @@
 import { expect, test, describe, it, assert} from 'vitest'
-import { extract_issue_numbers, extract_issue_urls, extract_dependency_lines, fetch_issuenode, update_issuegraph } from './github'
+import { extract_issue_numbers, extract_issue_urls, extract_dependency_lines, fetch_issuenode, update_issuegraph, want_links } from './github'
 import { IssueLink, Graph } from './graph'
 import { Octokit } from 'octokit';
 
@@ -38,7 +38,8 @@ describe("gather the issuegraph", async () => {
     let initial_node = await fetch_issuenode(octokit, "octocat", "Hello-World", 3094)
     assert(initial_node)
     let graph = new Graph([initial_node])
-    graph = await update_issuegraph(octokit, graph)
+    let want = want_links(graph)
+    graph = await update_issuegraph(octokit, graph, want)
     it("first node", ()=>{
         expect(graph.nodes.length).above(0)
         expect(graph.nodes[0].link).toEqual(new IssueLink("octocat", "Hello-World", 3094))
