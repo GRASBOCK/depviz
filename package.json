@@ -21,6 +21,8 @@
     "vitest": "^1.6.0"
   },
   "dependencies": {
-    "octokit": "^4.0.2"
+    "octokit": "^4.0.2",
+    "vis-data": "^7.1.9",
+    "vis-network": "^9.1.9"
   }
 }
