@@ -19,18 +19,8 @@ describe("fetch an issue from github", async () => {
             new Issue("octocat", "Hello-World", 3043),
             new Issue("octocat", "Hello-World", 3087), 
         ]
-        function issue_sort_function(a: Issue, b: Issue) {
-            let n = a.number - b.number
-            if(n != 0){
-                return n
-            }
-            n = a.repo.localeCompare(b.repo)
-            if(n != 0){
-                return n
-            }
-            return a.owner.localeCompare(b.owner)
-        }
-        expect(node?.dependencies.sort(issue_sort_function)).toEqual(dependencies.sort(issue_sort_function))
+
+        expect(node?.dependencies.sort(Issue.compare)).toEqual(dependencies.sort(Issue.compare))
     })
 })
 
