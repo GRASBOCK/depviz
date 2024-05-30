@@ -79,7 +79,11 @@ export async function update_issuegraph(octokit: Octokit, graph: Graph) {
     const promises = targets.map(async (i) => {
         console.log("target: ", i)
         return fetch_issuenode(octokit, i.owner, i.repo, i.number).then((n) => {
-            if(n) graph.nodes.push(n)
+            if(n){
+                if(!graph.nodes.find(b => Issue.same(n.issue, b.issue))){
+                    graph.nodes.push(n)
+                }
+            }
             else console.log("Issue does not exist: ", i)
         })
     })
