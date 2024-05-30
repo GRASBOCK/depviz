@@ -67,15 +67,19 @@ export async function fetch_issuenode(octokit: Octokit, owner: string, repo: str
     return new Node(issue, unqiue_deps)
 }
 
-export async function update_issuegraph(octokit: Octokit, graph: Graph) {
-    let targets: Issue[] = []
+export function want_nodes(graph: Graph){
+    let want: Issue[] = []
     graph.nodes.forEach((n) => {
         n.dependencies.forEach((d) => {
             if(graph.nodes.find(({issue: i}) => Issue.same(i, d)) === undefined) 
-                targets.push(d)
+                want.push(d)
         })
     })
-    const promises = targets.map(async (i) => {
+    return want
+}
+
+export async function update_issuegraph(octokit: Octokit, graph: Graph, want: Issue[]) {
+    const promises = want.map(async (i) => {
         return fetch_issuenode(octokit, i.owner, i.repo, i.number).then((n) => {
             if(n){
                 if(!graph.nodes.find(b => Issue.same(n.issue, b.issue))){

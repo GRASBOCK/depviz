@@ -1,7 +1,7 @@
 <script lang="ts">
 	import IssueTable from './lib/IssueTable.svelte';
 	import IssueGraph from './lib/IssueGraph.svelte';
-	import { fetch_issuenode, update_issuegraph } from "./lib/github"
+	import { fetch_issuenode, update_issuegraph, want_nodes } from "./lib/github"
 	import { onMount } from "svelte";
 	import { Graph } from "./lib/graph";
 	import { Octokit } from "octokit";
@@ -15,13 +15,16 @@
 	let graph: Graph
 
 	function update(){
-		loading = update_issuegraph(octokit, graph).then(async (g) => {
-			graph = g
+		let want = want_nodes(graph)
+		if(want.length > 0){
+			loading = update_issuegraph(octokit, graph, want).then(async (g) => {
+				graph = g
+				update()
+			})
+		}else{
 			loading = Promise.resolve()
-			await new Promise((resolve) => setTimeout(resolve, 10000));
-			
-			update()
-		})
+			new Promise((resolve) => setTimeout(resolve, 10000)).then(update);
+		}
 	}
 
 	// authenticates as app based on request URLs
