@@ -26,7 +26,7 @@ export class Issue{
   }
 }
 
-export class IssueNode{
+export class Node{
   issue: Issue
   dependencies: Issue[]
   constructor(issue: Issue, dependencies: Issue[]){
@@ -35,9 +35,9 @@ export class IssueNode{
   }
 }
 
-export class IssueGraph{
-  nodes: IssueNode[]
-  constructor(nodes: IssueNode[]){
+export class Graph{
+  nodes: Node[]
+  constructor(nodes: Node[]){
     this.nodes = nodes
   }
 }

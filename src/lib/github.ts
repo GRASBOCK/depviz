@@ -1,5 +1,5 @@
 import { Octokit, App } from "octokit";
-import { Issue, IssueNode, IssueGraph} from "./issuegraph"
+import { Issue, Node, Graph} from "./graph"
 
 export function extract_issue_numbers(line: string){
     let matches = [...line.matchAll(/#\d+/g)]
@@ -64,10 +64,10 @@ export async function fetch_issuenode(octokit: Octokit, owner: string, repo: str
     })
     let unqiue_deps: Issue[] = [];
     deps.forEach( (a) => {if(unqiue_deps.find(b => Issue.same(a, b)) === undefined) unqiue_deps.push(a)});
-    return new IssueNode(issue, unqiue_deps)
+    return new Node(issue, unqiue_deps)
 }
 
-export async function update_issuegraph(octokit: Octokit, graph: IssueGraph) {
+export async function update_issuegraph(octokit: Octokit, graph: Graph) {
     let targets: Issue[] = []
     graph.nodes.forEach((n) => {
         n.dependencies.forEach((d) => {
