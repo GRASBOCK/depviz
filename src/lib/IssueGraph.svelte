@@ -7,7 +7,9 @@
     export let graph: Graph
     var network: vis.Network | null = null;
 
-    function draw() {
+    $: draw(graph)
+
+    function draw(graph: Graph) {
         // create an array with nodes
         var nodes = new DataSet(graph.nodes.map((n, ni) => {
             return { id: ni, label: `#${n.issue.number}` }; 
@@ -58,10 +60,9 @@
             },
         };
         network = new vis.Network(container, data, options);
+        console.log("redraw")
+        network.redraw()
     }
-    onMount(async () => {
-      draw();
-    });
 </script>
 
 <div id="mynetwork"></div>
