@@ -1,9 +1,9 @@
 <script lang="ts">
     import { fetch_issue } from "./github"
     import { onMount } from 'svelte';
-    import type { IssueGraph, IssueNode } from "./issuegraph";
+    import type { IssueGraph } from "./issuegraph";
 
-    let graph: IssueGraph 
+    let graph: IssueGraph
     onMount(async () => {
         
 		const node = await fetch_issue("octocat", "Hello-World", 3094);

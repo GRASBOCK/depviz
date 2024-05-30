@@ -8,6 +8,22 @@ export class Issue{
     this.repo = repo
     this.number = number
   }
+
+  static compare(a: Issue, b: Issue){
+    let n = a.number - b.number
+    if(n != 0){
+        return n
+    }
+    n = a.repo.localeCompare(b.repo)
+    if(n != 0){
+        return n
+    }
+    return a.owner.localeCompare(b.owner)
+  }
+
+  static same(x: Issue, y: Issue){
+    return x.number == y.number && x.owner == y.owner && x.repo == y.repo
+  }
 }
 
 export class IssueNode{

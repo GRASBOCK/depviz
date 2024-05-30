@@ -70,6 +70,6 @@ export async function fetch_issue(owner: string, repo: string, issue_number: num
         }
     })
     let unqiue_deps: Issue[] = [];
-    deps.forEach( (x) => {if(unqiue_deps.find(y => x.number == y.number && x.owner == y.owner && x.repo == y.repo) === undefined) unqiue_deps.push(x)});
+    deps.forEach( (a) => {if(unqiue_deps.find(b => Issue.same(a, b)) === undefined) unqiue_deps.push(a)});
     return new IssueNode(issue, unqiue_deps)
 }
