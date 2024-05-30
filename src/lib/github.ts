@@ -1,5 +1,5 @@
 import { Octokit, App } from "octokit";
-import { Issue, IssueNode } from "./issuegraph"
+import { Issue, IssueNode, IssueGraph} from "./issuegraph"
 
 export function extract_issue_numbers(line: string){
     let matches = [...line.matchAll(/#\d+/g)]
@@ -42,14 +42,8 @@ export function extract_dependency_lines(line: string){
     }).filter((v): v is string => !!v)
 }
 
-export async function fetch_issue(owner: string, repo: string, issue_number: number) {
-    const octokit = new Octokit({
-        auth: "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"
-    });    
 
-    // authenticates as app based on request URLs
-    const { data: { login } } = await octokit.rest.users.getAuthenticated();
-    console.log("authenticated")
+export async function fetch_issuenode(octokit: Octokit, owner: string, repo: string, issue_number: number) {
     let issue = new Issue(owner, repo, issue_number)
     let remote_issue = await octokit.rest.issues.get({owner: "octocat", repo: "Hello-World", issue_number: 3094}).then(({data: issue})=>{return issue})
     if(remote_issue === undefined){
@@ -63,7 +57,6 @@ export async function fetch_issue(owner: string, repo: string, issue_number: num
             }
             const lines = extract_dependency_lines(body)
             for(let l of lines){
-                console.log("l: ", l)
                 extract_issue_numbers(l).forEach((num) => deps.push(new Issue(owner, repo, num)))
                 extract_issue_urls(l).forEach((i) => deps.push(i))
             }
@@ -72,4 +65,22 @@ export async function fetch_issue(owner: string, repo: string, issue_number: num
     let unqiue_deps: Issue[] = [];
     deps.forEach( (a) => {if(unqiue_deps.find(b => Issue.same(a, b)) === undefined) unqiue_deps.push(a)});
     return new IssueNode(issue, unqiue_deps)
+}
+
+export async function update_issuegraph(octokit: Octokit, graph: IssueGraph) {
+    let targets: Issue[] = []
+    graph.nodes.forEach((n) => {
+        n.dependencies.forEach((d) => {
+            if(graph.nodes.find(({issue: i}) => Issue.same(i, d)) === undefined) 
+                targets.push(d)
+        })
+    })
+    const promises = targets.map(async (i) => {
+        return fetch_issuenode(octokit, i.owner, i.repo, i.number).then((n) => {
+            if(n) graph.nodes.push(n)
+            else console.log("Issue does not exist: ", i)
+        })
+    })
+    console.log(graph)
+    return Promise.allSettled(promises).then(()=>graph)
 }

@@ -1,9 +1,16 @@
 import { expect, test, describe, it, assert} from 'vitest'
-import { extract_issue_numbers, extract_issue_urls, extract_dependency_lines, fetch_issue } from './github'
-import { Issue } from './issuegraph'
+import { extract_issue_numbers, extract_issue_urls, extract_dependency_lines, fetch_issuenode, update_issuegraph } from './github'
+import { Issue, IssueGraph } from './issuegraph'
+import { Octokit } from 'octokit';
 
-describe("fetch an issue from github", async () => {
-    let node = await fetch_issue("octocat", "Hello-World", 3094)
+describe("fetch an issue", async () => {
+    const octokit = new Octokit({
+        auth: "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"
+    });    
+    const { data: { login } } = await octokit.rest.users.getAuthenticated();
+    console.log("authenticated")
+
+    let node = await fetch_issuenode(octokit, "octocat", "Hello-World", 3094)
     it("issue exists", ()=>{
         expect(node)
     })
@@ -21,6 +28,32 @@ describe("fetch an issue from github", async () => {
         ]
 
         expect(node?.dependencies.sort(Issue.compare)).toEqual(dependencies.sort(Issue.compare))
+    })
+})
+
+describe("gather the issuegraph", async () => {
+    const octokit = new Octokit({
+        auth: "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"
+    });    
+    const { data: { login } } = await octokit.rest.users.getAuthenticated();
+    console.log("authenticated")
+    
+    
+    let initial_node = await fetch_issuenode(octokit, "octocat", "Hello-World", 3094)
+    assert(initial_node)
+    let graph = new IssueGraph([initial_node])
+    graph = await update_issuegraph(octokit, graph)
+    it("first node", ()=>{
+        expect(graph.nodes.length).above(0)
+        expect(graph.nodes[0].issue).toEqual(new Issue("octocat", "Hello-World", 3094))
+        let dependencies = [
+            new Issue("octocat", "Hello-World", 3095), 
+            new Issue("octocat", "Hello-World", 3089), 
+            new Issue("octocat", "Spoon-Knife", 33081),
+            new Issue("octocat", "Hello-World", 3043),
+            new Issue("octocat", "Hello-World", 3087), 
+        ]
+        expect(graph.nodes[0].dependencies.sort(Issue.compare)).toEqual(dependencies.sort(Issue.compare))
     })
 })
 
