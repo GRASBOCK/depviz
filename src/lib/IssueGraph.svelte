@@ -24,8 +24,6 @@
                 i++
             })
         })
-        console.log("nodes:", nodes)
-        console.log("edges:", edges)
         vis_edges = new DataSet(edges);
 
         var data: vis.Data = {

@@ -17,7 +17,6 @@
 	function update(){
 		loading = update_issuegraph(octokit, graph).then(async (g) => {
 			graph = g
-			console.log("graph:", graph)
 			loading = Promise.resolve()
 			await new Promise((resolve) => setTimeout(resolve, 10000));
 			
@@ -27,7 +26,6 @@
 
 	// authenticates as app based on request URLs
 	let loading: Promise<any> = octokit.rest.users.getAuthenticated().then(({ data: { login } }) => {
-		console.log("authenticated")
 		loading = fetch_issuenode(octokit, "octocat", "Hello-World", 3094).then((n)=>{
 			if(n){
 				graph = new Graph([n])

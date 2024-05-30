@@ -64,7 +64,6 @@ export async function fetch_issuenode(octokit: Octokit, owner: string, repo: str
     })
     let unqiue_deps: Issue[] = [];
     deps.forEach( (a) => {if(unqiue_deps.find(b => Issue.same(a, b)) === undefined) unqiue_deps.push(a)});
-    console.log("deps: ", unqiue_deps)
     return new Node(issue, unqiue_deps)
 }
 
@@ -77,16 +76,14 @@ export async function update_issuegraph(octokit: Octokit, graph: Graph) {
         })
     })
     const promises = targets.map(async (i) => {
-        console.log("target: ", i)
         return fetch_issuenode(octokit, i.owner, i.repo, i.number).then((n) => {
             if(n){
                 if(!graph.nodes.find(b => Issue.same(n.issue, b.issue))){
                     graph.nodes.push(n)
                 }
             }
-            else console.log("Issue does not exist: ", i)
+            else console.error("Issue does not exist: ", i)
         })
     })
-    console.log(graph)
     return Promise.allSettled(promises).then(()=>graph)
 }

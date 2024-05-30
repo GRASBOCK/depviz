@@ -8,7 +8,6 @@ describe("fetch an issue", async () => {
         auth: "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"
     });    
     const { data: { login } } = await octokit.rest.users.getAuthenticated();
-    console.log("authenticated")
 
     let node = await fetch_issuenode(octokit, "octocat", "Hello-World", 3094)
     it("issue exists", ()=>{
@@ -35,10 +34,7 @@ describe("gather the issuegraph", async () => {
     const octokit = new Octokit({
         auth: "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"
     });    
-    const { data: { login } } = await octokit.rest.users.getAuthenticated();
-    console.log("authenticated")
-    
-    
+    const { data: { login } } = await octokit.rest.users.getAuthenticated();    
     let initial_node = await fetch_issuenode(octokit, "octocat", "Hello-World", 3094)
     assert(initial_node)
     let graph = new Graph([initial_node])
