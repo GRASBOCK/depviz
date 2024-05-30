@@ -56,23 +56,15 @@
 {/each}
 </div>
 <main>
+	{#await loading}
+		<Spinner/>
+	{:then number}
+		✅
+	{:catch error}
+		❌
+	{/await}
 	{#if graph !== undefined}
-		{#await loading}
-			<center><Spinner/></center>
-		{:then number}
-			✅
-		{:catch error}
-			❌
-		{/await}
 		<svelte:component this={cur.comp} graph={graph} />
-	{:else}
-		{#await loading}
-			<center><Spinner/></center>
-		{:then number}
-			✅
-		{:catch error}
-			❌
-		{/await}
 	{/if}
 	
 	
@@ -96,6 +88,5 @@
 	main {
 		font-size: 1rem;
 		padding: 2rem;
-		border: 1px solid #abc;
 	}
 </style>
