@@ -1,13 +1,46 @@
 import { Octokit, App } from "octokit";
-import { Issue } from "./issue"
+import { Issue, IssueNode } from "./issuegraph"
 
-/* test cases
-Depends on #3095
-Depends on #3095 and #3094
-depends on #3095, #5464 https://github.com/octocat/Hello-World/issues/3095
-Depends on https://github.com/octocat/Hello-World/issues/3095
-Depends on [.sesef tju7 ++ #..](https://github.com/octocat/Hello-World/issues/3095)
-*/
+export function extract_issue_numbers(line: string){
+    let matches = [...line.matchAll(/#\d+/g)]
+    return matches.map((m)=>{
+        return parseInt(m[0].slice(1))
+    })
+}
+
+export function extract_issue_urls(line: string){
+    const re : RegExp = /https:\/\/github\.com\/(?<OWNER>.+?)\/(?<REPO>.+?)\/issues\/(?<ISSUE_NUMBER>\d+)/g
+    let matches = [...line.matchAll(re)]
+    return matches.map((m)=>{
+        let groups = m.groups
+        if(groups === undefined){
+            return
+        }
+        let owner = groups["OWNER"]
+        let repo = groups["REPO"]
+        let issue_number = groups["ISSUE_NUMBER"]
+        if(owner === undefined || repo === undefined || issue_number === undefined){
+            return
+        }
+        return new Issue(owner, repo, parseInt(issue_number))
+    }).filter((v): v is Issue => !!v)
+}
+
+export function extract_dependency_lines(line: string){
+    const re : RegExp = /depends on (?<DEPENDENCY_LINE>.*)/ig;
+    let matches = [...line.matchAll(re)]
+    return matches.map((m)=>{
+        let groups = m.groups
+        if(groups === undefined){
+            return null
+        }
+        let dependency_line = groups["DEPENDENCY_LINE"]
+        if(dependency_line === undefined){
+            return null
+        }
+        return dependency_line
+    }).filter((v): v is string => !!v)
+}
 
 export async function fetch_issue(owner: string, repo: string, issue_number: number) {
     const octokit = new Octokit({
@@ -17,59 +50,26 @@ export async function fetch_issue(owner: string, repo: string, issue_number: num
     // authenticates as app based on request URLs
     const { data: { login } } = await octokit.rest.users.getAuthenticated();
     console.log("authenticated")
-    let related_issues: Issue[] = []
     let issue = new Issue(owner, repo, issue_number)
     let remote_issue = await octokit.rest.issues.get({owner: "octocat", repo: "Hello-World", issue_number: 3094}).then(({data: issue})=>{return issue})
     if(remote_issue === undefined){
-        return [issue]
+        return
     }
-    
-    const issue_dependencies = await octokit.rest.issues.listComments({owner: owner, repo: repo, issue_number: 3094, per_page: 100}).then(({data})=>{
-        let issue_dependencies: Issue[] = []
+    let deps: Issue[] = [];
+    await octokit.rest.issues.listComments({owner: owner, repo: repo, issue_number: 3094, per_page: 100}).then(({data})=>{
         for (let {body} of data) {
             if(body === undefined){
                 continue
             }
-            const regex : RegExp = /depends on (?<ISSUES_TEXT>.*)/gmi;
-            let groups = regex.exec(body)?.groups
-            if(groups === undefined){
-                continue
+            const lines = extract_dependency_lines(body)
+            for(let l of lines){
+                console.log("l: ", l)
+                extract_issue_numbers(l).forEach((num) => deps.push(new Issue(owner, repo, num)))
+                extract_issue_urls(l).forEach((i) => deps.push(i))
             }
-            let issues_text = groups["ISSUES_TEXT"]
-            if(issues_text === undefined){
-                continue
-            }
-            
-            const regex_hashissue : RegExp = /#\d+/
-            let issue_deps: Issue[] = []
-            regex_hashissue.exec(issues_text)?.forEach((hashissue) => {
-                const issue_number = parseInt(hashissue.slice(1))
-                issue_deps.push(new Issue(owner, repo, issue_number))
-            })
-            const regex_githuburls : RegExp = /https:\/\/github\.com\/(?<OWNER>.+?)\/(?<REPO>.+?)\/issues\/(?<ISSUE_NUMBER>\d+)/
-            regex_githuburls.exec(body)?.forEach((url) => {
-                let groups = regex.exec(body)?.groups
-                if(groups === undefined){
-                    return
-                }
-                let owner = groups["OWNER"]
-                let repo = groups["REPO"]
-                let issue_number = groups["ISSUE_NUMBER"]
-                if(owner === undefined){
-                    return
-                }
-                if(repo === undefined){
-                    return
-                }
-                if(issue_number === undefined){
-                    return
-                }
-                return issue_deps.push(new Issue(owner, repo, parseInt(issue_number)))
-            })
-            issue_dependencies = issue_dependencies.concat(issue_deps)
         }
-        return issue_dependencies
     })
-    issue.depends_on = issue_dependencies
-    return [issue]
+    let unqiue_deps: Issue[] = [];
+    deps.forEach( (x) => {if(unqiue_deps.find(y => x.number == y.number && x.owner == y.owner && x.repo == y.repo) === undefined) unqiue_deps.push(x)});
+    return new IssueNode(issue, unqiue_deps)
 }
