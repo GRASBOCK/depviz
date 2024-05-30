@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { Graph, Issue } from "./graph";
+    import { Graph, IssueLink } from "./graph";
     import * as vis from 'vis-network'
     import {DataSet} from 'vis-data'
     import { onMount } from "svelte";
@@ -9,10 +9,16 @@
 
     $: draw(graph)
 
+    onMount(()=>{
+        draw(graph)
+    })
+
     function draw(graph: Graph) {
         // create an array with nodes
         var nodes = new DataSet(graph.nodes.map((n, ni) => {
-            return { id: ni, label: `#${n.issue.number}` }; 
+            let label = `#${n.link.number}`
+            if(n.data == null) label = `${label} ❓`
+            return { id: ni, label: label }; 
         }));
 
         // create an array with edges
@@ -21,7 +27,7 @@
         let i = 0
         graph.nodes.forEach((n, ni) => {
             n.dependencies.forEach((d) => {
-                let di = graph.nodes.findIndex(b => Issue.same(d, b.issue))
+                let di = graph.nodes.findIndex(b => IssueLink.same(d, b.link))
                 edges.push({ id: i, from: di, to: ni, arrows: "to" })
                 i++
             })

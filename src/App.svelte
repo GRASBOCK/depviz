@@ -1,7 +1,7 @@
 <script lang="ts">
 	import IssueTable from './lib/IssueTable.svelte';
 	import IssueGraph from './lib/IssueGraph.svelte';
-	import { fetch_issuenode, update_issuegraph, want_nodes } from "./lib/github"
+	import { fetch_issuenode, update_issuegraph, want_links } from "./lib/github"
 	import { onMount } from "svelte";
 	import { Graph } from "./lib/graph";
 	import { Octokit } from "octokit";
@@ -15,7 +15,7 @@
 	let graph: Graph
 
 	function update(){
-		let want = want_nodes(graph)
+		let want = want_links(graph)
 		if(want.length > 0){
 			loading = update_issuegraph(octokit, graph, want).then(async (g) => {
 				graph = g

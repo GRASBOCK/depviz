@@ -1,4 +1,4 @@
-export class Issue{
+export class IssueLink{
   owner: string
   repo: string
   number: number
@@ -9,7 +9,7 @@ export class Issue{
     this.number = number
   }
 
-  static compare(a: Issue, b: Issue){
+  static compare(a: IssueLink, b: IssueLink){
     let n = a.number - b.number
     if(n != 0){
         return n
@@ -21,16 +21,22 @@ export class Issue{
     return a.owner.localeCompare(b.owner)
   }
 
-  static same(x: Issue, y: Issue){
+  static same(x: IssueLink, y: IssueLink){
     return x.number == y.number && x.owner == y.owner && x.repo == y.repo
   }
 }
 
+export class IssueData{
+
+}
+
 export class Node{
-  issue: Issue
-  dependencies: Issue[]
-  constructor(issue: Issue, dependencies: Issue[]){
-    this.issue = issue
+  link: IssueLink
+  data: IssueData | null
+  dependencies: IssueLink[]
+  constructor(issue: IssueLink, data: IssueData | null, dependencies: IssueLink[]){
+    this.link = issue
+    this.data = data
     this.dependencies = dependencies
   }
 }
