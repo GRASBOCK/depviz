@@ -6,32 +6,29 @@
 	import { Graph } from "./lib/graph";
 	import { Octokit } from "octokit";
 
-	let loading: Promise<any> = new Promise((resolve, reject) => {
-		setTimeout(() => {
-			resolve('foo');
-		}, 300);
-	})
+	import Spinner from './lib/Spinner.svelte';
+
+	const octokit = new Octokit({
+		auth: "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"
+	});    
+
 	let graph: Graph
-	onMount(async () => {
-		const octokit = new Octokit({
-			auth: "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"
-		});    
 
-		// authenticates as app based on request URLs
-		const { data: { login } } = await octokit.rest.users.getAuthenticated();
+	function update(){
+		loading = update_issuegraph(octokit, graph).then(async (g) => {
+			graph = g
+			console.log("graph:", graph)
+			loading = Promise.resolve()
+			await new Promise((resolve) => setTimeout(resolve, 10000));
+			
+			update()
+		})
+	}
+
+	// authenticates as app based on request URLs
+	let loading: Promise<any> = octokit.rest.users.getAuthenticated().then(({ data: { login } }) => {
 		console.log("authenticated")
-
-		function update(){
-			loading = update_issuegraph(octokit, graph).then(async (g) => {
-				graph = g
-				console.log("graph:", graph)
-				loading = Promise.resolve()
-				await new Promise((resolve) => setTimeout(resolve, 10000));
-				
-				update()
-			})
-		}
-		fetch_issuenode(octokit, "octocat", "Hello-World", 3094).then((n)=>{
+		loading = fetch_issuenode(octokit, "octocat", "Hello-World", 3094).then((n)=>{
 			if(n){
 				graph = new Graph([n])
 				update()
@@ -41,6 +38,8 @@
 			
 		})
 	});
+	
+	
 	let tabs = [
 		{ name: "Table", comp: IssueTable },
 		{ name: "Graph", comp: IssueGraph },
@@ -59,7 +58,7 @@
 <main>
 	{#if graph !== undefined}
 		{#await loading}
-			<p>...waiting</p>
+			<center><Spinner/></center>
 		{:then number}
 			✅
 		{:catch error}
@@ -68,7 +67,7 @@
 		<svelte:component this={cur.comp} graph={graph} />
 	{:else}
 		{#await loading}
-			<p>...waiting</p>
+			<center><Spinner/></center>
 		{:then number}
 			✅
 		{:catch error}
