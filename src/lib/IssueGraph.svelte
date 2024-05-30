@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { Graph } from "./graph";
+    import { Graph, Issue } from "./graph";
     import * as vis from 'vis-network'
     import {DataSet} from 'vis-data'
     import { onMount } from "svelte";
@@ -18,11 +18,14 @@
         let edges: { id: number, from: number, to: number, arrows: string}[] = []
         let i = 0
         graph.nodes.forEach((n, ni) => {
-            n.dependencies.forEach((_, di) => {
+            n.dependencies.forEach((d) => {
+                let di = graph.nodes.findIndex(b => Issue.same(d, b.issue))
                 edges.push({ id: i, from: di, to: ni, arrows: "to" })
                 i++
             })
         })
+        console.log("nodes:", nodes)
+        console.log("edges:", edges)
         vis_edges = new DataSet(edges);
 
         var data: vis.Data = {
