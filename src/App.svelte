@@ -6,8 +6,12 @@
 	import { Graph } from "./lib/graph";
 	import { Octokit } from "octokit";
 
-	let view = "graph"
-	let graph = new Graph([])
+	let loading: Promise<any> = new Promise((resolve, reject) => {
+		setTimeout(() => {
+			resolve('foo');
+		}, 300);
+	})
+	let graph: Graph
 	onMount(async () => {
 		const octokit = new Octokit({
 			auth: "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"
@@ -18,16 +22,18 @@
 		console.log("authenticated")
 
 		function update(){
-			update_issuegraph(octokit, graph).then(async (g) => {
+			loading = update_issuegraph(octokit, graph).then(async (g) => {
 				graph = g
 				console.log("graph:", graph)
+				loading = Promise.resolve()
 				await new Promise((resolve) => setTimeout(resolve, 10000));
+				
 				update()
 			})
 		}
 		fetch_issuenode(octokit, "octocat", "Hello-World", 3094).then((n)=>{
 			if(n){
-				graph.nodes.push(n)
+				graph = new Graph([n])
 				update()
 			}else{
 				console.error("Initial node does not exist")
@@ -50,8 +56,27 @@
 	</button>
 {/each}
 </div>
-<main>	
-	<svelte:component this={cur.comp} graph={graph} />
+<main>
+	{#if graph !== undefined}
+		{#await loading}
+			<p>...waiting</p>
+		{:then number}
+			✅
+		{:catch error}
+			❌
+		{/await}
+		<svelte:component this={cur.comp} graph={graph} />
+	{:else}
+		{#await loading}
+			<p>...waiting</p>
+		{:then number}
+			✅
+		{:catch error}
+			❌
+		{/await}
+	{/if}
+	
+	
 </main>
 
 <style>
