@@ -15,11 +15,11 @@
 
         // create an array with edges
         let vis_edges: vis.DataInterfaceEdges
-        let edges: { id: number, from: number, to: number }[] = []
+        let edges: { id: number, from: number, to: number, arrows: string}[] = []
         let i = 0
         graph.nodes.forEach((n, ni) => {
             n.dependencies.forEach((_, di) => {
-                edges.push({ id: i, from: di, to: ni })
+                edges.push({ id: i, from: di, to: ni, arrows: "to" })
                 i++
             })
         })

@@ -45,12 +45,12 @@ export function extract_dependency_lines(line: string){
 
 export async function fetch_issuenode(octokit: Octokit, owner: string, repo: string, issue_number: number) {
     let issue = new Issue(owner, repo, issue_number)
-    let remote_issue = await octokit.rest.issues.get({owner: "octocat", repo: "Hello-World", issue_number: 3094}).then(({data: issue})=>{return issue})
+    let remote_issue = await octokit.rest.issues.get({owner: owner, repo: repo, issue_number: issue_number}).then(({data: issue})=>{return issue})
     if(remote_issue === undefined){
         return
     }
     let deps: Issue[] = [];
-    await octokit.rest.issues.listComments({owner: owner, repo: repo, issue_number: 3094, per_page: 100}).then(({data})=>{
+    await octokit.rest.issues.listComments({owner: owner, repo: repo, issue_number: issue_number, per_page: 100}).then(({data})=>{
         for (let {body} of data) {
             if(body === undefined){
                 continue
@@ -64,6 +64,7 @@ export async function fetch_issuenode(octokit: Octokit, owner: string, repo: str
     })
     let unqiue_deps: Issue[] = [];
     deps.forEach( (a) => {if(unqiue_deps.find(b => Issue.same(a, b)) === undefined) unqiue_deps.push(a)});
+    console.log("deps: ", unqiue_deps)
     return new Node(issue, unqiue_deps)
 }
 
@@ -76,6 +77,7 @@ export async function update_issuegraph(octokit: Octokit, graph: Graph) {
         })
     })
     const promises = targets.map(async (i) => {
+        console.log("target: ", i)
         return fetch_issuenode(octokit, i.owner, i.repo, i.number).then((n) => {
             if(n) graph.nodes.push(n)
             else console.log("Issue does not exist: ", i)
