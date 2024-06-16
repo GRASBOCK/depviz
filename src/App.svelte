@@ -32,7 +32,7 @@
 	async function authenticate_client(){
 		// authenticates as app based on request URLs
 		loading_text = "authenticating the client"
-		let octokit = new Octokit({ auth: access_token });   
+		octokit = new Octokit({ auth: access_token });   
 		const { data: { login } } = await octokit.rest.users.getAuthenticated();
         console.log("loaded");
 	}

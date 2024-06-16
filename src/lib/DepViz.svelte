@@ -7,19 +7,18 @@
 
 	import Spinner from './Spinner.svelte';
 
+    export let authorized_client: Octokit
 	export let access_token: string|null
 	export let owner : string
 	export let repo : string
-	export let issue_number : number
-
-	const octokit = new Octokit({ auth: access_token });    
+	export let issue_number : number 
 
 	let graph: Graph
 
 	function update(){
 		let want = want_links(graph)
 		if(want.length > 0 && access_token){
-			loading = update_issuegraph(octokit, graph, want).then(async (g) => {
+			loading = update_issuegraph(authorized_client, graph, want).then(async (g) => {
 				graph = g
 				update()
 			})
@@ -30,7 +29,7 @@
 	}
 
 	// authenticates as app based on request URLs
-	let loading: Promise<any> = fetch_issuenode(octokit, owner, repo, issue_number).then((n) => {
+	let loading: Promise<any> = fetch_issuenode(authorized_client, owner, repo, issue_number).then((n) => {
 		if(n){
 			graph = new Graph([n])
 			update()
@@ -63,7 +62,7 @@
     {:then number}
         ✅
     {:catch error}
-        ❌
+        ❌ {error}
     {/await}
     {#if graph !== undefined}
         <svelte:component this={cur.comp} graph={graph} />
