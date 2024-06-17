@@ -1,8 +1,9 @@
 <script>
+    import { base } from '$app/paths';
     let owner = "octocat";
 	let repo = "Hello-World";
     let issue_number = "3094";
-    $: url = `/github/${owner}/${repo}/${issue_number}`
+    $: url = `${base}/github/${owner}/${repo}/${issue_number}`
     let valid_input = false
     function validate_issue_number(){
         valid_input = issue_number.match(/^-?\d+$/) != null
