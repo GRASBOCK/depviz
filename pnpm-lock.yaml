@@ -4,6 +4,17 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+dependencies:
+  octokit:
+    specifier: ^4.0.2
+    version: 4.0.2
+  vis-data:
+    specifier: ^7.1.9
+    version: 7.1.9(uuid@9.0.1)(vis-util@5.0.7)
+  vis-network:
+    specifier: ^9.1.9
+    version: 9.1.9(@egjs/hammerjs@2.0.17)(component-emitter@1.3.1)(keycharm@0.4.0)(uuid@9.0.1)(vis-data@7.1.9)(vis-util@5.0.7)
+
 devDependencies:
   '@sveltejs/adapter-auto':
     specifier: ^3.0.0
@@ -20,6 +31,9 @@ devDependencies:
   '@types/eslint':
     specifier: ^8.56.7
     version: 8.56.10
+  dotenv:
+    specifier: ^16.4.5
+    version: 16.4.5
   eslint:
     specifier: ^9.0.0
     version: 9.5.0
@@ -69,6 +83,13 @@ packages:
       '@jridgewell/gen-mapping': 0.3.5
       '@jridgewell/trace-mapping': 0.3.25
     dev: true
+
+  /@egjs/hammerjs@2.0.17:
+    resolution: {integrity: sha512-XQsZgjm2EcVUiZQf11UBJQfmZeEmOW8DpI1gsFeln6w0ae0ii4dMQEQ0kjl6DspdWX1aGY1/loyXnP0JS06e/A==}
+    engines: {node: '>=0.8.0'}
+    dependencies:
+      '@types/hammerjs': 2.0.45
+    dev: false
 
   /@esbuild/aix-ppc64@0.21.5:
     resolution: {integrity: sha512-1SDgH6ZSPTlggy1yI6+Dbkiz8xzpHJEVAlF/AM1tHPLsf5STom9rwtjE4hKAF20FfXXNTFqEYXyJNWh1GiZedQ==}
@@ -398,6 +419,235 @@ packages:
       fastq: 1.17.1
     dev: true
 
+  /@octokit/app@15.1.0:
+    resolution: {integrity: sha512-TkBr7QgOmE6ORxvIAhDbZsqPkF7RSqTY4pLTtUQCvr6dTXqvi2fFo46q3h1lxlk/sGMQjqyZ0kEahkD/NyzOHg==}
+    engines: {node: '>= 18'}
+    dependencies:
+      '@octokit/auth-app': 7.1.0
+      '@octokit/auth-unauthenticated': 6.1.0
+      '@octokit/core': 6.1.2
+      '@octokit/oauth-app': 7.1.2
+      '@octokit/plugin-paginate-rest': 11.3.0(@octokit/core@6.1.2)
+      '@octokit/types': 13.5.0
+      '@octokit/webhooks': 13.2.7
+    dev: false
+
+  /@octokit/auth-app@7.1.0:
+    resolution: {integrity: sha512-cazGaJPSgeZ8NkVYeM/C5l/6IQ5vZnsI8p1aMucadCkt/bndI+q+VqwrlnWbASRmenjOkf1t1RpCKrif53U8gw==}
+    engines: {node: '>= 18'}
+    dependencies:
+      '@octokit/auth-oauth-app': 8.1.1
+      '@octokit/auth-oauth-user': 5.1.1
+      '@octokit/request': 9.1.1
+      '@octokit/request-error': 6.1.1
+      '@octokit/types': 13.5.0
+      lru-cache: 10.2.2
+      universal-github-app-jwt: 2.2.0
+      universal-user-agent: 7.0.2
+    dev: false
+
+  /@octokit/auth-oauth-app@8.1.1:
+    resolution: {integrity: sha512-5UtmxXAvU2wfcHIPPDWzVSAWXVJzG3NWsxb7zCFplCWEmMCArSZV0UQu5jw5goLQXbFyOr5onzEH37UJB3zQQg==}
+    engines: {node: '>= 18'}
+    dependencies:
+      '@octokit/auth-oauth-device': 7.1.1
+      '@octokit/auth-oauth-user': 5.1.1
+      '@octokit/request': 9.1.1
+      '@octokit/types': 13.5.0
+      universal-user-agent: 7.0.2
+    dev: false
+
+  /@octokit/auth-oauth-device@7.1.1:
+    resolution: {integrity: sha512-HWl8lYueHonuyjrKKIup/1tiy0xcmQCdq5ikvMO1YwkNNkxb6DXfrPjrMYItNLyCP/o2H87WuijuE+SlBTT8eg==}
+    engines: {node: '>= 18'}
+    dependencies:
+      '@octokit/oauth-methods': 5.1.2
+      '@octokit/request': 9.1.1
+      '@octokit/types': 13.5.0
+      universal-user-agent: 7.0.2
+    dev: false
+
+  /@octokit/auth-oauth-user@5.1.1:
+    resolution: {integrity: sha512-rRkMz0ErOppdvEfnemHJXgZ9vTPhBuC6yASeFaB7I2yLMd7QpjfrL1mnvRPlyKo+M6eeLxrKanXJ9Qte29SRsw==}
+    engines: {node: '>= 18'}
+    dependencies:
+      '@octokit/auth-oauth-device': 7.1.1
+      '@octokit/oauth-methods': 5.1.2
+      '@octokit/request': 9.1.1
+      '@octokit/types': 13.5.0
+      universal-user-agent: 7.0.2
+    dev: false
+
+  /@octokit/auth-token@5.1.1:
+    resolution: {integrity: sha512-rh3G3wDO8J9wSjfI436JUKzHIxq8NaiL0tVeB2aXmG6p/9859aUOAjA9pmSPNGGZxfwmaJ9ozOJImuNVJdpvbA==}
+    engines: {node: '>= 18'}
+    dev: false
+
+  /@octokit/auth-unauthenticated@6.1.0:
+    resolution: {integrity: sha512-zPSmfrUAcspZH/lOFQnVnvjQZsIvmfApQH6GzJrkIunDooU1Su2qt2FfMTSVPRp7WLTQyC20Kd55lF+mIYaohQ==}
+    engines: {node: '>= 18'}
+    dependencies:
+      '@octokit/request-error': 6.1.1
+      '@octokit/types': 13.5.0
+    dev: false
+
+  /@octokit/core@6.1.2:
+    resolution: {integrity: sha512-hEb7Ma4cGJGEUNOAVmyfdB/3WirWMg5hDuNFVejGEDFqupeOysLc2sG6HJxY2etBp5YQu5Wtxwi020jS9xlUwg==}
+    engines: {node: '>= 18'}
+    dependencies:
+      '@octokit/auth-token': 5.1.1
+      '@octokit/graphql': 8.1.1
+      '@octokit/request': 9.1.1
+      '@octokit/request-error': 6.1.1
+      '@octokit/types': 13.5.0
+      before-after-hook: 3.0.2
+      universal-user-agent: 7.0.2
+    dev: false
+
+  /@octokit/endpoint@10.1.1:
+    resolution: {integrity: sha512-JYjh5rMOwXMJyUpj028cu0Gbp7qe/ihxfJMLc8VZBMMqSwLgOxDI1911gV4Enl1QSavAQNJcwmwBF9M0VvLh6Q==}
+    engines: {node: '>= 18'}
+    dependencies:
+      '@octokit/types': 13.5.0
+      universal-user-agent: 7.0.2
+    dev: false
+
+  /@octokit/graphql@8.1.1:
+    resolution: {integrity: sha512-ukiRmuHTi6ebQx/HFRCXKbDlOh/7xEV6QUXaE7MJEKGNAncGI/STSbOkl12qVXZrfZdpXctx5O9X1AIaebiDBg==}
+    engines: {node: '>= 18'}
+    dependencies:
+      '@octokit/request': 9.1.1
+      '@octokit/types': 13.5.0
+      universal-user-agent: 7.0.2
+    dev: false
+
+  /@octokit/oauth-app@7.1.2:
+    resolution: {integrity: sha512-4ntCOZIiTozKwuYQroX/ZD722tzMH8Eicv/cgDM/3F3lyrlwENHDv4flTCBpSJbfK546B2SrkKMWB+/HbS84zQ==}
+    engines: {node: '>= 18'}
+    dependencies:
+      '@octokit/auth-oauth-app': 8.1.1
+      '@octokit/auth-oauth-user': 5.1.1
+      '@octokit/auth-unauthenticated': 6.1.0
+      '@octokit/core': 6.1.2
+      '@octokit/oauth-authorization-url': 7.1.1
+      '@octokit/oauth-methods': 5.1.2
+      '@types/aws-lambda': 8.10.138
+      universal-user-agent: 7.0.2
+    dev: false
+
+  /@octokit/oauth-authorization-url@7.1.1:
+    resolution: {integrity: sha512-ooXV8GBSabSWyhLUowlMIVd9l1s2nsOGQdlP2SQ4LnkEsGXzeCvbSbCPdZThXhEFzleGPwbapT0Sb+YhXRyjCA==}
+    engines: {node: '>= 18'}
+    dev: false
+
+  /@octokit/oauth-methods@5.1.2:
+    resolution: {integrity: sha512-C5lglRD+sBlbrhCUTxgJAFjWgJlmTx5bQ7Ch0+2uqRjYv7Cfb5xpX4WuSC9UgQna3sqRGBL9EImX9PvTpMaQ7g==}
+    engines: {node: '>= 18'}
+    dependencies:
+      '@octokit/oauth-authorization-url': 7.1.1
+      '@octokit/request': 9.1.1
+      '@octokit/request-error': 6.1.1
+      '@octokit/types': 13.5.0
+    dev: false
+
+  /@octokit/openapi-types@22.2.0:
+    resolution: {integrity: sha512-QBhVjcUa9W7Wwhm6DBFu6ZZ+1/t/oYxqc2tp81Pi41YNuJinbFRx8B133qVOrAaBbF7D/m0Et6f9/pZt9Rc+tg==}
+    dev: false
+
+  /@octokit/openapi-webhooks-types@8.2.1:
+    resolution: {integrity: sha512-msAU1oTSm0ZmvAE0xDemuF4tVs5i0xNnNGtNmr4EuATi+1Rn8cZDetj6NXioSf5LwnxEc209COa/WOSbjuhLUA==}
+    dev: false
+
+  /@octokit/plugin-paginate-graphql@5.2.2(@octokit/core@6.1.2):
+    resolution: {integrity: sha512-7znSVvlNAOJisCqAnjN1FtEziweOHSjPGAuc5W58NeGNAr/ZB57yCsjQbXDlWsVryA7hHQaEQPcBbJYFawlkyg==}
+    engines: {node: '>= 18'}
+    peerDependencies:
+      '@octokit/core': '>=6'
+    dependencies:
+      '@octokit/core': 6.1.2
+    dev: false
+
+  /@octokit/plugin-paginate-rest@11.3.0(@octokit/core@6.1.2):
+    resolution: {integrity: sha512-n4znWfRinnUQF6TPyxs7EctSAA3yVSP4qlJP2YgI3g9d4Ae2n5F3XDOjbUluKRxPU3rfsgpOboI4O4VtPc6Ilg==}
+    engines: {node: '>= 18'}
+    peerDependencies:
+      '@octokit/core': '>=6'
+    dependencies:
+      '@octokit/core': 6.1.2
+      '@octokit/types': 13.5.0
+    dev: false
+
+  /@octokit/plugin-rest-endpoint-methods@13.2.1(@octokit/core@6.1.2):
+    resolution: {integrity: sha512-YMWBw6Exh1ZBs5cCE0AnzYxSQDIJS00VlBqISTgNYmu5MBdeM07K/MAJjy/VkNaH5jpJmD/5HFUvIZ+LDB5jSQ==}
+    engines: {node: '>= 18'}
+    peerDependencies:
+      '@octokit/core': '>=6'
+    dependencies:
+      '@octokit/core': 6.1.2
+      '@octokit/types': 13.5.0
+    dev: false
+
+  /@octokit/plugin-retry@7.1.1(@octokit/core@6.1.2):
+    resolution: {integrity: sha512-G9Ue+x2odcb8E1XIPhaFBnTTIrrUDfXN05iFXiqhR+SeeeDMMILcAnysOsxUpEWcQp2e5Ft397FCXTcPkiPkLw==}
+    engines: {node: '>= 18'}
+    peerDependencies:
+      '@octokit/core': '>=6'
+    dependencies:
+      '@octokit/core': 6.1.2
+      '@octokit/request-error': 6.1.1
+      '@octokit/types': 13.5.0
+      bottleneck: 2.19.5
+    dev: false
+
+  /@octokit/plugin-throttling@9.3.0(@octokit/core@6.1.2):
+    resolution: {integrity: sha512-B5YTToSRTzNSeEyssnrT7WwGhpIdbpV9NKIs3KyTWHX6PhpYn7gqF/+lL3BvsASBM3Sg5BAUYk7KZx5p/Ec77w==}
+    engines: {node: '>= 18'}
+    peerDependencies:
+      '@octokit/core': ^6.0.0
+    dependencies:
+      '@octokit/core': 6.1.2
+      '@octokit/types': 13.5.0
+      bottleneck: 2.19.5
+    dev: false
+
+  /@octokit/request-error@6.1.1:
+    resolution: {integrity: sha512-1mw1gqT3fR/WFvnoVpY/zUM2o/XkMs/2AszUUG9I69xn0JFLv6PGkPhNk5lbfvROs79wiS0bqiJNxfCZcRJJdg==}
+    engines: {node: '>= 18'}
+    dependencies:
+      '@octokit/types': 13.5.0
+    dev: false
+
+  /@octokit/request@9.1.1:
+    resolution: {integrity: sha512-pyAguc0p+f+GbQho0uNetNQMmLG1e80WjkIaqqgUkihqUp0boRU6nKItXO4VWnr+nbZiLGEyy4TeKRwqaLvYgw==}
+    engines: {node: '>= 18'}
+    dependencies:
+      '@octokit/endpoint': 10.1.1
+      '@octokit/request-error': 6.1.1
+      '@octokit/types': 13.5.0
+      universal-user-agent: 7.0.2
+    dev: false
+
+  /@octokit/types@13.5.0:
+    resolution: {integrity: sha512-HdqWTf5Z3qwDVlzCrP8UJquMwunpDiMPt5er+QjGzL4hqr/vBVY/MauQgS1xWxCDT1oMx1EULyqxncdCY/NVSQ==}
+    dependencies:
+      '@octokit/openapi-types': 22.2.0
+    dev: false
+
+  /@octokit/webhooks-methods@5.1.0:
+    resolution: {integrity: sha512-yFZa3UH11VIxYnnoOYCVoJ3q4ChuSOk2IVBBQ0O3xtKX4x9bmKb/1t+Mxixv2iUhzMdOl1qeWJqEhouXXzB3rQ==}
+    engines: {node: '>= 18'}
+    dev: false
+
+  /@octokit/webhooks@13.2.7:
+    resolution: {integrity: sha512-sPHCyi9uZuCs1gg0yF53FFocM+GsiiBEhQQV/itGzzQ8gjyv2GMJ1YvgdDY4lC0ePZeiV3juEw4GbS6w1VHhRw==}
+    engines: {node: '>= 18'}
+    dependencies:
+      '@octokit/openapi-webhooks-types': 8.2.1
+      '@octokit/request-error': 6.1.1
+      '@octokit/webhooks-methods': 5.1.0
+      aggregate-error: 5.0.0
+    dev: false
+
   /@polka/url@1.0.0-next.25:
     resolution: {integrity: sha512-j7P6Rgr3mmtdkeDGTe0E/aYyWEWVtc5yFXtHCRHs28/jptDEWfaVOc5T7cblqy1XKPPfCxJc/8DwQ5YgLOZOVQ==}
     dev: true
@@ -614,6 +864,10 @@ packages:
       - supports-color
     dev: true
 
+  /@types/aws-lambda@8.10.138:
+    resolution: {integrity: sha512-71EHMl70TPWIAsFuHd85NHq6S6T2OOjiisPTrH7RgcjzpJpPh4RQJv7PvVvIxc6PIp8CLV7F9B+TdjcAES5vcA==}
+    dev: false
+
   /@types/cookie@0.6.0:
     resolution: {integrity: sha512-4Kh9a6B2bQciAhf7FSuMRRkUWecJgJu9nPnx3yzpsfXX/c50REIqpHY4C82bXP90qrLtXtkDxTZosYO3UpOwlA==}
     dev: true
@@ -628,6 +882,10 @@ packages:
   /@types/estree@1.0.5:
     resolution: {integrity: sha512-/kYRxGDLWzHOB7q+wtSUQlFrtcdUccpfy+X+9iMBpHK8QLLhx2wIPYuS5DYtR9Wa/YlZAbIovy7qVdB1Aq6Lyw==}
     dev: true
+
+  /@types/hammerjs@2.0.45:
+    resolution: {integrity: sha512-qkcUlZmX6c4J8q45taBKTL3p+LbITgyx7qhlPYOdOHZB7B31K0mXbP5YA7i7SgDeEGuI9MnumiKPEMrxg8j3KQ==}
+    dev: false
 
   /@types/json-schema@7.0.15:
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
@@ -823,6 +1081,14 @@ packages:
     hasBin: true
     dev: true
 
+  /aggregate-error@5.0.0:
+    resolution: {integrity: sha512-gOsf2YwSlleG6IjRYG2A7k0HmBMEo6qVNk9Bp/EaLgAJT5ngH6PXbqa4ItvnEwCm/velL5jAnQgsHsWnjhGmvw==}
+    engines: {node: '>=18'}
+    dependencies:
+      clean-stack: 5.2.0
+      indent-string: 5.0.0
+    dev: false
+
   /ajv@6.12.6:
     resolution: {integrity: sha512-j3fVLgvTo527anyYyJOGTYJbG+vnnQYvE0m5mmkc1TK+nxAppkCLMIL0aZ4dblVCNoGShhm+kzE4ZUykBoMg4g==}
     dependencies:
@@ -886,10 +1152,18 @@ packages:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
     dev: true
 
+  /before-after-hook@3.0.2:
+    resolution: {integrity: sha512-Nik3Sc0ncrMK4UUdXQmAnRtzmNQTAAXmXIopizwZ1W1t8QmfJj+zL4OA2I7XPTPW5z5TDqv4hRo/JzouDJnX3A==}
+    dev: false
+
   /binary-extensions@2.3.0:
     resolution: {integrity: sha512-Ceh+7ox5qe7LJuLHoY0feh3pHuUDHAcRUeyL2VYghZwfpkNIy/+8Ocg0a3UuSoYzavmylwuLWQOf3hl0jjMMIw==}
     engines: {node: '>=8'}
     dev: true
+
+  /bottleneck@2.19.5:
+    resolution: {integrity: sha512-VHiNCbI1lKdl44tGrhNfU3lup0Tj/ZBMJB5/2ZbNXRCPuRCO7ed2mgcK4r17y+KB2EfuYuRaVlwNbAeaWGSpbw==}
+    dev: false
 
   /brace-expansion@1.1.11:
     resolution: {integrity: sha512-iCuPHDFgrHX7H2vEI/5xpz07zSHB00TpugqhmYtVmMO6518mCuRMoOYFldEBl0g187ufozdaHgWKcYFb61qGiA==}
@@ -968,6 +1242,13 @@ packages:
       fsevents: 2.3.3
     dev: true
 
+  /clean-stack@5.2.0:
+    resolution: {integrity: sha512-TyUIUJgdFnCISzG5zu3291TAsE77ddchd0bepon1VVQrKLGKFED4iXFEDQ24mIPdPBbyE16PK3F8MYE1CmcBEQ==}
+    engines: {node: '>=14.16'}
+    dependencies:
+      escape-string-regexp: 5.0.0
+    dev: false
+
   /code-red@1.0.4:
     resolution: {integrity: sha512-7qJWqItLA8/VPVlKJlFXU+NBlo/qyfs39aJcuMT/2ere32ZqvF5OSxgdM5xOfJJ7O429gg2HM47y8v9P+9wrNw==}
     dependencies:
@@ -988,6 +1269,10 @@ packages:
   /color-name@1.1.4:
     resolution: {integrity: sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA==}
     dev: true
+
+  /component-emitter@1.3.1:
+    resolution: {integrity: sha512-T0+barUSQRTUQASh8bx02dl+DhF54GtIDY13Y3m9oWTklKbb3Wv974meRpeZ3lp1JpLVECWWNHC4vaG2XHXouQ==}
+    dev: false
 
   /concat-map@0.0.1:
     resolution: {integrity: sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==}
@@ -1079,6 +1364,11 @@ packages:
       path-type: 4.0.0
     dev: true
 
+  /dotenv@16.4.5:
+    resolution: {integrity: sha512-ZmdL2rui+eB2YwhsWzjInR8LldtZHGDoQ1ugH85ppHKwpUHL7j7rN0Ti9NCnGiQbhaZ11FpR+7ao1dNsmduNUg==}
+    engines: {node: '>=12'}
+    dev: true
+
   /es6-promise@3.3.1:
     resolution: {integrity: sha512-SOp9Phqvqn7jtEUxPWdWfWoLmyt2VaJ6MpvP9Comy1MceMXqE6bxvaTu4iaxpYYPzhny28Lc+M87/c2cPK6lDg==}
     dev: true
@@ -1118,6 +1408,11 @@ packages:
     resolution: {integrity: sha512-TtpcNJ3XAzx3Gq8sWRzJaVajRs0uVxA2YAkdb1jm2YkPz4G6egUFAyA3n5vtEIZefPk5Wa4UXbKuS5fKkJWdgA==}
     engines: {node: '>=10'}
     dev: true
+
+  /escape-string-regexp@5.0.0:
+    resolution: {integrity: sha512-/veY75JbMK4j1yjvuUxuVsiS/hr/4iHs9FTT6cgTexxdE0Ly/glccBAkloH/DofkjRbZU3bnoj38mOmhkZ0lHw==}
+    engines: {node: '>=12'}
+    dev: false
 
   /eslint-compat-utils@0.5.1(eslint@9.5.0):
     resolution: {integrity: sha512-3z3vFexKIEnjHE3zCMRo6fn/e44U7T1khUjg+Hp0ZQMCigh28rALD0nPFBcGZuiLC5rLZa2ubQHDRln09JfU2Q==}
@@ -1481,6 +1776,11 @@ packages:
     engines: {node: '>=0.8.19'}
     dev: true
 
+  /indent-string@5.0.0:
+    resolution: {integrity: sha512-m6FAo/spmsW2Ab2fU35JTYwtOKa2yAwXSwgjSv1TJzh4Mh7mC3lzAOVLBprb72XsTrgkEIsl7YrFNAiDiRhIGg==}
+    engines: {node: '>=12'}
+    dev: false
+
   /inflight@1.0.6:
     resolution: {integrity: sha512-k92I/b08q4wvFscXCLvqfsHCrjrF7yiXsQuIVvVE7N82W3+aqpzuUdBbfhWcy/FZR3/4IgflMgKLOsvPDrGCJA==}
     deprecated: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
@@ -1560,6 +1860,10 @@ packages:
     resolution: {integrity: sha512-Bdboy+l7tA3OGW6FjyFHWkP5LuByj1Tk33Ljyq0axyzdk9//JSi2u3fP1QSmd1KNwq6VOKYGlAu87CisVir6Pw==}
     dev: true
 
+  /keycharm@0.4.0:
+    resolution: {integrity: sha512-TyQTtsabOVv3MeOpR92sIKk/br9wxS+zGj4BG7CR8YbK4jM3tyIBaF0zhzeBUMx36/Q/iQLOKKOT+3jOQtemRQ==}
+    dev: false
+
   /keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
     dependencies:
@@ -1616,6 +1920,11 @@ packages:
     dependencies:
       get-func-name: 2.0.2
     dev: true
+
+  /lru-cache@10.2.2:
+    resolution: {integrity: sha512-9hp3Vp2/hFQUiIwKo8XCeFVnrg8Pk3TYNPIR7tJADKi5YfcF7vEaK7avFHTlSy3kOKYaJQaalfEo6YuXdceBOQ==}
+    engines: {node: 14 || >=16.14}
+    dev: false
 
   /magic-string@0.30.10:
     resolution: {integrity: sha512-iIRwTIf0QKV3UAnYK4PU8uiEc4SRh5jX0mwpIwETPpHdhVM4f53RSwS/vXvN1JhGX+Cs7B8qIq3d6AH49O5fAQ==}
@@ -1722,6 +2031,22 @@ packages:
     dependencies:
       path-key: 4.0.0
     dev: true
+
+  /octokit@4.0.2:
+    resolution: {integrity: sha512-wbqF4uc1YbcldtiBFfkSnquHtECEIpYD78YUXI6ri1Im5OO2NLo6ZVpRdbJpdnpZ05zMrVPssNiEo6JQtea+Qg==}
+    engines: {node: '>= 18'}
+    dependencies:
+      '@octokit/app': 15.1.0
+      '@octokit/core': 6.1.2
+      '@octokit/oauth-app': 7.1.2
+      '@octokit/plugin-paginate-graphql': 5.2.2(@octokit/core@6.1.2)
+      '@octokit/plugin-paginate-rest': 11.3.0(@octokit/core@6.1.2)
+      '@octokit/plugin-rest-endpoint-methods': 13.2.1(@octokit/core@6.1.2)
+      '@octokit/plugin-retry': 7.1.1(@octokit/core@6.1.2)
+      '@octokit/plugin-throttling': 9.3.0(@octokit/core@6.1.2)
+      '@octokit/request-error': 6.1.1
+      '@octokit/types': 13.5.0
+    dev: false
 
   /once@1.4.0:
     resolution: {integrity: sha512-lNaJgI+2Q5URQBkccEKHTQOPaXdUxnZZElQTZY0MFUAuaEqe1E+Nyvgdz/aIyNi6Z9MzO5dv1H8n58/GELp3+w==}
@@ -2318,6 +2643,14 @@ packages:
     resolution: {integrity: sha512-Y7HYmWaFwPUmkoQCUIAYpKqkOf+SbVj/2fJJZ4RJMCfZp0rTGwRbzQD+HghfnhKOjL9E01okqz+ncJskGYfBNw==}
     dev: true
 
+  /universal-github-app-jwt@2.2.0:
+    resolution: {integrity: sha512-G5o6f95b5BggDGuUfKDApKaCgNYy2x7OdHY0zSMF081O0EJobw+1130VONhrA7ezGSV2FNOGyM+KQpQZAr9bIQ==}
+    dev: false
+
+  /universal-user-agent@7.0.2:
+    resolution: {integrity: sha512-0JCqzSKnStlRRQfCdowvqy3cy0Dvtlb8xecj/H8JFZuCze4rwjPZQOgvFvn0Ws/usCHQFGpyr+pB9adaGwXn4Q==}
+    dev: false
+
   /uri-js@4.4.1:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}
     dependencies:
@@ -2327,6 +2660,50 @@ packages:
   /util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
     dev: true
+
+  /uuid@9.0.1:
+    resolution: {integrity: sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==}
+    hasBin: true
+    dev: false
+
+  /vis-data@7.1.9(uuid@9.0.1)(vis-util@5.0.7):
+    resolution: {integrity: sha512-COQsxlVrmcRIbZMMTYwD+C2bxYCFDNQ2EHESklPiInbD/Pk3JZ6qNL84Bp9wWjYjAzXfSlsNaFtRk+hO9yBPWA==}
+    peerDependencies:
+      uuid: ^3.4.0 || ^7.0.0 || ^8.0.0 || ^9.0.0
+      vis-util: ^5.0.1
+    dependencies:
+      uuid: 9.0.1
+      vis-util: 5.0.7(@egjs/hammerjs@2.0.17)(component-emitter@1.3.1)
+    dev: false
+
+  /vis-network@9.1.9(@egjs/hammerjs@2.0.17)(component-emitter@1.3.1)(keycharm@0.4.0)(uuid@9.0.1)(vis-data@7.1.9)(vis-util@5.0.7):
+    resolution: {integrity: sha512-Ft+hLBVyiLstVYSb69Q1OIQeh3FeUxHJn0WdFcq+BFPqs+Vq1ibMi2sb//cxgq1CP7PH4yOXnHxEH/B2VzpZYA==}
+    peerDependencies:
+      '@egjs/hammerjs': ^2.0.0
+      component-emitter: ^1.3.0
+      keycharm: ^0.2.0 || ^0.3.0 || ^0.4.0
+      uuid: ^3.4.0 || ^7.0.0 || ^8.0.0 || ^9.0.0
+      vis-data: ^6.3.0 || ^7.0.0
+      vis-util: ^5.0.1
+    dependencies:
+      '@egjs/hammerjs': 2.0.17
+      component-emitter: 1.3.1
+      keycharm: 0.4.0
+      uuid: 9.0.1
+      vis-data: 7.1.9(uuid@9.0.1)(vis-util@5.0.7)
+      vis-util: 5.0.7(@egjs/hammerjs@2.0.17)(component-emitter@1.3.1)
+    dev: false
+
+  /vis-util@5.0.7(@egjs/hammerjs@2.0.17)(component-emitter@1.3.1):
+    resolution: {integrity: sha512-E3L03G3+trvc/X4LXvBfih3YIHcKS2WrP0XTdZefr6W6Qi/2nNCqZfe4JFfJU6DcQLm6Gxqj2Pfl+02859oL5A==}
+    engines: {node: '>=8'}
+    peerDependencies:
+      '@egjs/hammerjs': ^2.0.0
+      component-emitter: ^1.3.0 || ^2.0.0
+    dependencies:
+      '@egjs/hammerjs': 2.0.17
+      component-emitter: 1.3.1
+    dev: false
 
   /vite-node@1.6.0:
     resolution: {integrity: sha512-de6HJgzC+TFzOu0NTC4RAIsyf/DY/ibWDYQUcuEA84EMHhcefTUGkjFHKKEJhQN4A+6I0u++kr3l36ZF2d7XRw==}
