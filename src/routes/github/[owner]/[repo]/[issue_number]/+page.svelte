@@ -6,19 +6,11 @@
     import DepViz from '$lib/DepViz.svelte';
 	import { onMount } from "svelte";
     import { Graph } from "$lib/graph";
+    export let data: {owner: string, repo: string, issue_number: number};
 
-	function get_code_param(){
-		const queryString = window.location.search;
-		const urlparam = new URLSearchParams(queryString)
-		const codeParam = urlparam.get("code")
-		return codeParam
-	}
     const client_id = "Ov23li6GSVgimy2efmMK"
     const client_secret = "058b818696f69fa50166939c1949c6a581e86ddd" // github does not support PKCE
 	let access_token: string|null = null
-	let owner = "octocat"
-	let repo = "Hello-World"
-	let issue_number = 3094
     let graph: Graph
 
 	let octokit : Octokit
@@ -37,7 +29,7 @@
         let data = await resp.json()
         if(data.error_description){
             if(data.error == "bad_verification_code"){
-                window.location.assign("/github")
+                window.location.assign(window.location.href.split("?")[0])
                 return Promise.reject(data.error_description);
             }
             return Promise.reject(data.error_description);
@@ -60,12 +52,13 @@
 	}
 
 	function loginWithGithub(){
-		window.location.assign(`https://github.com/login/oauth/authorize?client_id=${client_id}&redirect_uri=${window.location.href}`)
+		window.location.assign(`https://github.com/login/oauth/authorize?client_id=${client_id}&redirect_uri=${window.location.href.split(/&code=/)[0]}`)
 	}
 	
     function update(){
 		let want = want_links(graph)
 		if(want.length > 0 && access_token){
+            loading_text = "updating issue graph"
 			loading = update_issuegraph(octokit, graph, want).then(async (g) => {
 				graph = g
 				update()
@@ -76,36 +69,40 @@
 		}
 	}
     
-    async function init_graph() {
+    async function init_graph(owner: string, repo: string, issue_number: number) {
+        loading_text = "fetching root issue"
         const n = await fetch_issuenode(octokit, owner, repo, issue_number)
         if(n){
             graph = new Graph([n])
             update()
         }else{
-            console.error("Initial node does not exist")
+            return Promise.reject("Initial node does not exist")
         }
     }
-
     onMount(()=>{
+        const queryString = window.location.search;
+		const urlparam = new URLSearchParams(queryString)
+        const authorization_code = urlparam.get("code")
+        
         access_token = localStorage.getItem("access_token")
+        console.log("access_token: ", access_token)
         if(access_token){
 		    loading = authenticate_client().then(() => {
-                loading = init_graph()
+                loading = init_graph(data.owner, data.repo, data.issue_number)
             })
         } 
         else{
-            const authorization_code = get_code_param()
             if(authorization_code){
                 loading = fetch_access_token(authorization_code).then(()=>{
                     loading = authenticate_client().then(() => {
-                        loading = init_graph()
+                        loading = init_graph(data.owner, data.repo, data.issue_number)
                     })
                 })
+            }else{
+                console.log("redirect_uri",window.location.href.split(/&code=/)[0])
             }
-        } 
+        }
     })
-
-    
 </script>
 
 <main>
