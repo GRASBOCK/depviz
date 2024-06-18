@@ -28,6 +28,7 @@ jobs:
       - name: build
         env:
           BASE_PATH: '/${{ github.event.repository.name }}'
+          PUBLIC_CLIENT_SECRET: $PUBLIC_CLIENT_SECRET
         run: |
           pnpm run build
 

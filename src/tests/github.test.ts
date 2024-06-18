@@ -2,11 +2,9 @@ import { expect, test, describe, it, assert} from 'vitest'
 import { extract_issue_numbers, extract_issue_urls, extract_dependency_lines, fetch_issuenode, update_issuegraph, want_links } from '$lib/github'
 import { IssueLink, Graph } from '$lib/graph'
 import { Octokit } from 'octokit';
-import { config } from 'dotenv'
+import { ACCESS_TOKEN } from '$env/static/private';
 
-const env_vars = config().parsed
-assert(env_vars)
-const testing_access_token = env_vars["ACCESS_TOKEN"]
+const testing_access_token = ACCESS_TOKEN
 
 describe("fetch an issue", async () => {
     const octokit = new Octokit({ auth: testing_access_token });    

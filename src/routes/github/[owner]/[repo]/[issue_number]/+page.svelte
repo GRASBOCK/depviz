@@ -7,9 +7,10 @@
 	import { onMount } from "svelte";
     import { Graph } from "$lib/graph";
     export let data: {owner: string, repo: string, issue_number: number};
+    import { PUBLIC_CLIENT_ID, PUBLIC_CLIENT_SECRET } from '$env/static/public';
 
-    const client_id = "Ov23li6GSVgimy2efmMK"
-    const client_secret = "058b818696f69fa50166939c1949c6a581e86ddd" // github does not support PKCE
+    const client_id = PUBLIC_CLIENT_ID
+    const client_secret = PUBLIC_CLIENT_SECRET // github does not support PKCE
 	let access_token: string|null = null
     let graph: Graph
 
