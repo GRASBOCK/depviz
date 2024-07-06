@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { Graph, IssueLink } from "./graph";
+    import { Graph, Node, IssueLink } from "./graph";
     import * as vis from 'vis-network'
     import {DataSet} from 'vis-data'
     import { onMount } from "svelte";
@@ -12,6 +12,11 @@
     onMount(()=>{
         draw(graph)
     })
+
+    export let on_select = function (node: Node){
+        window.open(node.link.url(), '_blank');
+        console.log("Selection: " + node.link.url())
+    }
 
     function draw(graph: Graph) {
         // create an array with nodes
@@ -66,9 +71,20 @@
             },
         };
         network = new vis.Network(container, data, options);
+
+        // add event listeners
+        network.on("select", function (params) {
+            if(params.nodes.length > 0){
+                let node_index = params.nodes[0]
+                let node = graph.nodes[node_index]
+                on_select(node)
+            }
+        });
         console.log("redraw")
         network.redraw()
     }
+
+    
 </script>
 
 <div id="mynetwork"></div>

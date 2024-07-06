@@ -1,12 +1,23 @@
 export class IssueLink{
+  host: string
   owner: string
   repo: string
   number: number
 
-  constructor(owner: string, repo: string, number: number){
+  constructor(host: string, owner: string, repo: string, number: number){
+    this.host = host
     this.owner = owner
     this.repo = repo
     this.number = number
+  }
+
+  url(): string{
+    switch(this.host){
+      case "github":
+        return `https://github.com/${this.owner}/${this.repo}/issues/${this.number}`
+      default:
+        throw "host unsupported"
+    }
   }
 
   static compare(a: IssueLink, b: IssueLink){
