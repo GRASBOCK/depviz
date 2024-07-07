@@ -1,6 +1,8 @@
 import { Octokit, App } from "octokit";
 import { IssueLink, Node, Graph, IssueData} from "./graph"
 
+export const GITHUB_HOSTNAME: string = "github"
+
 export function extract_issue_numbers(line: string){
     let matches = [...line.matchAll(/#\d+/g)]
     return matches.map((m)=>{
@@ -22,7 +24,7 @@ export function extract_issue_urls(line: string){
         if(owner === undefined || repo === undefined || issue_number === undefined){
             return
         }
-        return new IssueLink("github", owner, repo, parseInt(issue_number))
+        return new IssueLink(GITHUB_HOSTNAME, owner, repo, parseInt(issue_number))
     }).filter((v): v is IssueLink => !!v)
 }
 
@@ -44,7 +46,7 @@ export function extract_dependency_lines(line: string){
 
 
 export async function fetch_issuenode(octokit: Octokit, owner: string, repo: string, issue_number: number) {
-    let link = new IssueLink("github", owner, repo, issue_number)
+    let link = new IssueLink(GITHUB_HOSTNAME, owner, repo, issue_number)
     let remote_issue = await octokit.rest.issues.get({owner: owner, repo: repo, issue_number: issue_number})
         .then(({data: issue})=> new Node(link, new IssueData(), []))
         .catch((e: any) => {new Node(link, null, [])})
@@ -59,7 +61,7 @@ export async function fetch_issuenode(octokit: Octokit, owner: string, repo: str
             }
             const lines = extract_dependency_lines(body)
             for(let l of lines){
-                extract_issue_numbers(l).forEach((num) => deps.push(new IssueLink("github", owner, repo, num)))
+                extract_issue_numbers(l).forEach((num) => deps.push(new IssueLink(GITHUB_HOSTNAME, owner, repo, num)))
                 extract_issue_urls(l).forEach((i) => deps.push(i))
             }
         }

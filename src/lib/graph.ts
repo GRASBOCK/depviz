@@ -1,3 +1,5 @@
+import { GITHUB_HOSTNAME } from "./github"
+
 export class IssueLink{
   host: string
   owner: string
@@ -13,10 +15,10 @@ export class IssueLink{
 
   url(): string{
     switch(this.host){
-      case "github":
+      case GITHUB_HOSTNAME:
         return `https://github.com/${this.owner}/${this.repo}/issues/${this.number}`
       default:
-        throw "host unsupported"
+        throw Error("host unsupported")
     }
   }
 
