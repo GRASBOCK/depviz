@@ -43,14 +43,27 @@ export class IssueData{
 
 }
 
+export class Relationship{
+  dependency: boolean
+  link: IssueLink
+  constructor(link: IssueLink, dependency: boolean){
+    this.link = link
+    this.dependency = dependency
+  }
+
+  static compare(a: Relationship, b: Relationship){
+    return IssueLink.compare(a.link, b.link)
+  }
+}
+
 export class Node{
   link: IssueLink
   data: IssueData | null
-  dependencies: IssueLink[]
-  constructor(issue: IssueLink, data: IssueData | null, dependencies: IssueLink[]){
+  related: Relationship[]
+  constructor(issue: IssueLink, data: IssueData | null, dependencies: Relationship[]){
     this.link = issue
     this.data = data
-    this.dependencies = dependencies
+    this.related = dependencies
   }
 }
 

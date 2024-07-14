@@ -1,6 +1,6 @@
 import { expect, test, describe, it, assert} from 'vitest'
 import { extract_issue_numbers, extract_issue_urls, extract_dependency_lines, fetch_issuenode, update_issuegraph, want_links, GITHUB_HOSTNAME } from '$lib/github'
-import { IssueLink, Graph } from '$lib/graph'
+import { IssueLink, Graph, Relationship } from '$lib/graph'
 import { Octokit } from 'octokit';
 import { ACCESS_TOKEN } from '$env/static/private';
 
@@ -20,14 +20,14 @@ describe("fetch an issue", async () => {
     
     it("issue dependencies", ()=>{
         let dependencies = [
-            new IssueLink(GITHUB_HOSTNAME, "octocat", "Hello-World", 3095), 
-            new IssueLink(GITHUB_HOSTNAME, "octocat", "Hello-World", 3089), 
-            new IssueLink(GITHUB_HOSTNAME, "octocat", "Spoon-Knife", 33081),
-            new IssueLink(GITHUB_HOSTNAME, "octocat", "Hello-World", 3043),
-            new IssueLink(GITHUB_HOSTNAME, "octocat", "Hello-World", 3087), 
+            new Relationship(new IssueLink(GITHUB_HOSTNAME, "octocat", "Hello-World", 3095), true), 
+            new Relationship(new IssueLink(GITHUB_HOSTNAME, "octocat", "Hello-World", 3089), true), 
+            new Relationship(new IssueLink(GITHUB_HOSTNAME, "octocat", "Spoon-Knife", 33081), true),
+            new Relationship(new IssueLink(GITHUB_HOSTNAME, "octocat", "Hello-World", 3043), true),
+            new Relationship(new IssueLink(GITHUB_HOSTNAME, "octocat", "Hello-World", 3087), true), 
         ]
 
-        expect(node?.dependencies.sort(IssueLink.compare)).toEqual(dependencies.sort(IssueLink.compare))
+        expect(node?.related.sort(Relationship.compare)).toEqual(dependencies.sort(Relationship.compare))
     })
 })
 
@@ -43,13 +43,13 @@ describe("gather the issuegraph", async () => {
         expect(graph.nodes.length).above(0)
         expect(graph.nodes[0].link).toEqual(new IssueLink(GITHUB_HOSTNAME, "octocat", "Hello-World", 3094))
         let dependencies = [
-            new IssueLink(GITHUB_HOSTNAME, "octocat", "Hello-World", 3095), 
-            new IssueLink(GITHUB_HOSTNAME, "octocat", "Hello-World", 3089), 
-            new IssueLink(GITHUB_HOSTNAME, "octocat", "Spoon-Knife", 33081),
-            new IssueLink(GITHUB_HOSTNAME, "octocat", "Hello-World", 3043),
-            new IssueLink(GITHUB_HOSTNAME, "octocat", "Hello-World", 3087), 
+            new Relationship(new IssueLink(GITHUB_HOSTNAME, "octocat", "Hello-World", 3095), true), 
+            new Relationship(new IssueLink(GITHUB_HOSTNAME, "octocat", "Hello-World", 3089), true),
+            new Relationship(new IssueLink(GITHUB_HOSTNAME, "octocat", "Spoon-Knife", 33081),true),
+            new Relationship(new IssueLink(GITHUB_HOSTNAME, "octocat", "Hello-World", 3043),true),
+            new Relationship(new IssueLink(GITHUB_HOSTNAME, "octocat", "Hello-World", 3087), true),
         ]
-        expect(graph.nodes[0].dependencies.sort(IssueLink.compare)).toEqual(dependencies.sort(IssueLink.compare))
+        expect(graph.nodes[0].related.sort(Relationship.compare)).toEqual(dependencies.sort(Relationship.compare))
     })
 })
 

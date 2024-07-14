@@ -28,12 +28,13 @@
 
         // create an array with edges
         let vis_edges: vis.DataInterfaceEdges
-        let edges: { id: number, from: number, to: number, arrows: string}[] = []
+        let edges: { id: number, from: number, to: number, arrows: {to: {enabled: boolean, type: string}}, dashes: boolean}[] = []
         let i = 0
         graph.nodes.forEach((n, ni) => {
-            n.dependencies.forEach((d) => {
-                let di = graph.nodes.findIndex(b => IssueLink.same(d, b.link))
-                edges.push({ id: i, from: di, to: ni, arrows: "to" })
+            n.related.forEach((r) => {
+                let ri = graph.nodes.findIndex(b => IssueLink.same(r.link, b.link))
+                edges.push({ id: i, from: ri, to: ni, arrows: {to: {enabled: r.dependency,
+                    type: "arrow"}}, dashes: !r.dependency })
                 i++
             })
         })

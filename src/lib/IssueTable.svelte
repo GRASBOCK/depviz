@@ -9,9 +9,9 @@
     <li>
     {node.link.number}
     {#if node.data === null}❓{/if}
-    {#if node.dependencies.length > 0}->{/if}
-    {#each node.dependencies as dependency, i}
-        <a href={dependency.url()}>{dependency.number}</a>&nbsp
+    {#if node.related.length > 0}->{/if}
+    {#each node.related as r, i}
+        <a href={r.link.url()}>{r.link.number}{#if r.dependency}⤵️{:else}🔗{/if}</a>&nbsp
     {/each}
     </li>
 {/each}

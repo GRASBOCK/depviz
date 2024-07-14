@@ -1,16 +1,16 @@
 import { Octokit, App } from "octokit";
-import { IssueLink, Node, Graph, IssueData} from "./graph"
+import { IssueLink, Node, Graph, IssueData, Relationship} from "./graph"
 
 export const GITHUB_HOSTNAME: string = "github"
 
-export function extract_issue_numbers(line: string){
+export function extract_issue_numbers(line: string): number[]{
     let matches = [...line.matchAll(/#\d+/g)]
     return matches.map((m)=>{
         return parseInt(m[0].slice(1))
     })
 }
 
-export function extract_issue_urls(line: string){
+export function extract_issue_urls(line: string): IssueLink[]{
     const re : RegExp = /https:\/\/github\.com\/(?<OWNER>.+?)\/(?<REPO>.+?)\/issues\/(?<ISSUE_NUMBER>\d+)/g
     let matches = [...line.matchAll(re)]
     return matches.map((m)=>{
@@ -28,7 +28,7 @@ export function extract_issue_urls(line: string){
     }).filter((v): v is IssueLink => !!v)
 }
 
-export function extract_dependency_lines(line: string){
+export function extract_dependency_lines(line: string): string[]{
     const re : RegExp = /depends on (?<DEPENDENCY_LINE>.*)/ig;
     let matches = [...line.matchAll(re)]
     return matches.map((m)=>{
@@ -54,21 +54,26 @@ export async function fetch_issuenode(octokit: Octokit, owner: string, repo: str
         return new Node(link, null, [])
     }
     let deps: IssueLink[] = [];
+    let all_links: IssueLink[] = [];
     await octokit.rest.issues.listComments({owner: owner, repo: repo, issue_number: issue_number, per_page: 100}).then(({data})=>{
         for (let {body} of data) {
             if(body === undefined){
                 continue
             }
-            const lines = extract_dependency_lines(body)
-            for(let l of lines){
+            const dep_lines = extract_dependency_lines(body)
+            for(let l of dep_lines){
                 extract_issue_numbers(l).forEach((num) => deps.push(new IssueLink(GITHUB_HOSTNAME, owner, repo, num)))
                 extract_issue_urls(l).forEach((i) => deps.push(i))
             }
+
+            all_links = extract_issue_urls(body).concat(extract_issue_numbers(body).map((num) => new IssueLink(GITHUB_HOSTNAME, owner, repo, num)))
         }
     })
-    let unqiue_deps: IssueLink[] = [];
-    deps.forEach( (a) => {if(unqiue_deps.find(b => IssueLink.same(a, b)) === undefined) unqiue_deps.push(a)});
-    return new Node(link, new IssueData(), unqiue_deps)
+    let related: Relationship[] = [];
+    deps.forEach( (a) => {if(related.find(b => IssueLink.same(a, b.link)) === undefined) related.push(new Relationship(a, true))});
+    // any leftovers are just links
+    all_links.forEach( (a) => {if(related.find(b => IssueLink.same(a, b.link)) === undefined) related.push(new Relationship(a, false))});
+    return new Node(link, new IssueData(), related)
 }
 
 export function want_links(graph: Graph){
@@ -77,9 +82,9 @@ export function want_links(graph: Graph){
         if(n.data === null){
             return
         }
-        n.dependencies.forEach((d) => {
-            if(graph.nodes.find(({link: i}) => IssueLink.same(i, d)) === undefined) 
-                want.push(d)
+        n.related.forEach((r) => {
+            if(graph.nodes.find(({link: i}) => IssueLink.same(i, r.link)) === undefined) 
+                want.push(r.link)
         })
     })
     return want
