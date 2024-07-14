@@ -1,6 +1,6 @@
 import { expect, test, describe, it, assert} from 'vitest'
 import { extract_issue_numbers, extract_issue_urls, extract_dependency_lines, fetch_issuenode, update_issuegraph, want_links, GITHUB_HOSTNAME } from '$lib/github'
-import { IssueLink, Graph, Relationship } from '$lib/graph'
+import { Node, Graph } from '$lib/graph'
 import { Octokit } from 'octokit';
 import { ACCESS_TOKEN } from '$env/static/private';
 
@@ -10,46 +10,53 @@ describe("fetch an issue", async () => {
     const octokit = new Octokit({ auth: testing_access_token });    
     const { data: { login } } = await octokit.rest.users.getAuthenticated();
 
-    let node = await fetch_issuenode(octokit, "octocat", "Hello-World", 3094)
+    let {node, relationships} = await fetch_issuenode(octokit, "octocat", "Hello-World", 3094)
     it("issue exists", ()=>{
         expect(node)
     })
     it("issue details", ()=>{
-        expect(node?.link).toEqual(new IssueLink(GITHUB_HOSTNAME, "octocat", "Hello-World", 3094))
+        expect(node).toEqual(new Node(GITHUB_HOSTNAME, "octocat", "Hello-World", 3094))
     })
     
     it("issue dependencies", ()=>{
-        let dependencies = [
-            new Relationship(new IssueLink(GITHUB_HOSTNAME, "octocat", "Hello-World", 3095), true), 
-            new Relationship(new IssueLink(GITHUB_HOSTNAME, "octocat", "Hello-World", 3089), true), 
-            new Relationship(new IssueLink(GITHUB_HOSTNAME, "octocat", "Spoon-Knife", 33081), true),
-            new Relationship(new IssueLink(GITHUB_HOSTNAME, "octocat", "Hello-World", 3043), true),
-            new Relationship(new IssueLink(GITHUB_HOSTNAME, "octocat", "Hello-World", 3087), true), 
-        ]
-
-        expect(node?.related.sort(Relationship.compare)).toEqual(dependencies.sort(Relationship.compare))
+        
+        function compare(a: {node: Node, dependency: boolean}, b: {node: Node, dependency: boolean}){
+            return Node.compare(a.node, b.node)
+        }
+        let expected_relationships = [
+            {node: new Node(GITHUB_HOSTNAME, "octocat", "Hello-World", 3095), dependency: true}, 
+            {node: new Node(GITHUB_HOSTNAME, "octocat", "Hello-World", 3089), dependency: true}, 
+            {node: new Node(GITHUB_HOSTNAME, "octocat", "Spoon-Knife", 33081), dependency: true},
+            {node: new Node(GITHUB_HOSTNAME, "octocat", "Hello-World", 3043), dependency: true},
+            {node: new Node(GITHUB_HOSTNAME, "octocat", "Hello-World", 3087), dependency: true}, 
+        ].sort()
+        expect(relationships.sort(compare)).toEqual(expected_relationships.sort(compare))
     })
 })
 
 describe("gather the issuegraph", async () => {
     const octokit = new Octokit({ auth: testing_access_token }); 
     const { data: { login } } = await octokit.rest.users.getAuthenticated();    
-    let initial_node = await fetch_issuenode(octokit, "octocat", "Hello-World", 3094)
-    assert(initial_node)
-    let graph = new Graph([initial_node])
-    let want = want_links(graph)
-    graph = await update_issuegraph(octokit, graph, want)
+    const node = new Node(GITHUB_HOSTNAME, "octocat", "Hello-World", 3094)
+    let graph = new Graph(node)
+    for(let i = 0; i < 2; i++){
+        let want = want_links(graph)
+        graph = await update_issuegraph(octokit, graph, want)
+    }
     it("first node", ()=>{
         expect(graph.nodes.length).above(0)
-        expect(graph.nodes[0].link).toEqual(new IssueLink(GITHUB_HOSTNAME, "octocat", "Hello-World", 3094))
-        let dependencies = [
-            new Relationship(new IssueLink(GITHUB_HOSTNAME, "octocat", "Hello-World", 3095), true), 
-            new Relationship(new IssueLink(GITHUB_HOSTNAME, "octocat", "Hello-World", 3089), true),
-            new Relationship(new IssueLink(GITHUB_HOSTNAME, "octocat", "Spoon-Knife", 33081),true),
-            new Relationship(new IssueLink(GITHUB_HOSTNAME, "octocat", "Hello-World", 3043),true),
-            new Relationship(new IssueLink(GITHUB_HOSTNAME, "octocat", "Hello-World", 3087), true),
-        ]
-        expect(graph.nodes[0].related.sort(Relationship.compare)).toEqual(dependencies.sort(Relationship.compare))
+        expect(graph.nodes[0]).toEqual(new Node(GITHUB_HOSTNAME, "octocat", "Hello-World", 3094))
+        function compare(a: {node: Node, dependency: boolean}, b: {node: Node, dependency: boolean}){
+            return Node.compare(a.node, b.node)
+        }
+        let expected_relationships = [
+            {node: new Node(GITHUB_HOSTNAME, "octocat", "Hello-World", 3095), dependency: true}, 
+            {node: new Node(GITHUB_HOSTNAME, "octocat", "Hello-World", 3089), dependency: true}, 
+            {node: new Node(GITHUB_HOSTNAME, "octocat", "Spoon-Knife", 33081), dependency: true},
+            {node: new Node(GITHUB_HOSTNAME, "octocat", "Hello-World", 3043), dependency: true},
+            {node: new Node(GITHUB_HOSTNAME, "octocat", "Hello-World", 3087), dependency: true}, 
+        ].sort()
+        expect(graph.relationships(node).sort(compare)).toEqual(expected_relationships.sort(compare))
     })
 })
 
@@ -69,11 +76,11 @@ describe("extract from tags", () => {
 })
 
 describe("extract from url", () => {
-    const tests: {desc: string, text: string, expected: IssueLink[]}[] = [
-        {desc: "default", text: "https://github.com/octocat/Hello-World/issues/3095", expected: [new IssueLink(GITHUB_HOSTNAME, "octocat", "Hello-World", 3095)]},
-        {desc: "multiple", text: "https://github.com/octocat/Hello-World/issues/3095 https://github.com/octocat/Hello-World/issues/3093", expected: [new IssueLink(GITHUB_HOSTNAME, "octocat", "Hello-World", 3095), new IssueLink(GITHUB_HOSTNAME, "octocat", "Hello-World", 3093)]},
-        {desc: "markdown link", text: "[.sesef tju7 ++ #..](https://github.com/octocat/Hello-World/issues/3095)", expected: [new IssueLink(GITHUB_HOSTNAME, "octocat", "Hello-World", 3095)]},
-        {desc: "other repo", text: "https://github.com/octocat/Spoon-Knife/issues/33081", expected: [new IssueLink(GITHUB_HOSTNAME, "octocat", "Spoon-Knife", 33081)]},
+    const tests: {desc: string, text: string, expected: Node[]}[] = [
+        {desc: "default", text: "https://github.com/octocat/Hello-World/issues/3095", expected: [new Node(GITHUB_HOSTNAME, "octocat", "Hello-World", 3095)]},
+        {desc: "multiple", text: "https://github.com/octocat/Hello-World/issues/3095 https://github.com/octocat/Hello-World/issues/3093", expected: [new Node(GITHUB_HOSTNAME, "octocat", "Hello-World", 3095), new Node(GITHUB_HOSTNAME, "octocat", "Hello-World", 3093)]},
+        {desc: "markdown link", text: "[.sesef tju7 ++ #..](https://github.com/octocat/Hello-World/issues/3095)", expected: [new Node(GITHUB_HOSTNAME, "octocat", "Hello-World", 3095)]},
+        {desc: "other repo", text: "https://github.com/octocat/Spoon-Knife/issues/33081", expected: [new Node(GITHUB_HOSTNAME, "octocat", "Spoon-Knife", 33081)]},
         {desc: "not a url", text: "#3095", expected: []},
     ]    
     

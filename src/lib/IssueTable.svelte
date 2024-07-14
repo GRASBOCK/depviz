@@ -2,16 +2,18 @@
     import { Graph } from "./graph";
 
     export let graph: Graph
+    
+    $: related = graph.nodes.map((n) => graph.relationships(n))
 </script>
 
 <p>Issues:</p>
 {#each graph.nodes as node, i}
     <li>
-    {node.link.number}
+    {node.number}
     {#if node.data === null}❓{/if}
-    {#if node.related.length > 0}->{/if}
-    {#each node.related as r, i}
-        <a href={r.link.url()}>{r.link.number}{#if r.dependency}⤵️{:else}🔗{/if}</a>&nbsp
+    {#if related[i].length > 0}->{/if}
+    {#each related[i] as {node, dependency}, i}
+        <a href={node.url()}>{node.number}{#if dependency}⤵️{:else}🔗{/if}</a>&nbsp
     {/each}
     </li>
 {/each}
