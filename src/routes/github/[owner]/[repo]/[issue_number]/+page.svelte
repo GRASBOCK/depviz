@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { Octokit } from "octokit";
-
     import { fetch_issuenode, update_issuegraph, want_links } from "$lib/github"
 	import Spinner from '$lib/Spinner.svelte';
     import DepViz from '$lib/DepViz.svelte';
 	import { onMount } from "svelte";
     import { Graph } from "$lib/graph";
+	import { base } from "$app/paths";
+    
     export let data: {owner: string, repo: string, issue_number: number};
     
 	let access_token: string|null = null
@@ -51,7 +52,7 @@
             )
         } 
         else{
-            window.location.assign(`/github/`)
+            window.location.assign(`${base}/github/`)
         }
     })
 </script>
