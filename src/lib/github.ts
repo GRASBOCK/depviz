@@ -11,7 +11,7 @@ export function extract_issue_numbers(line: string): number[]{
 }
 
 export function extract_issue_urls(line: string): IssueLink[]{
-    const re : RegExp = /https:\/\/github\.com\/(?<OWNER>.+?)\/(?<REPO>.+?)\/issues\/(?<ISSUE_NUMBER>\d+)/g
+    const re : RegExp = /github\.com\/(?<OWNER>.+?)\/(?<REPO>.+?)\/issues\/(?<ISSUE_NUMBER>\d+)/g
     let matches = [...line.matchAll(re)]
     return matches.map((m)=>{
         let groups = m.groups
@@ -66,9 +66,27 @@ export async function fetch_issuenode(octokit: Octokit, owner: string, repo: str
                 extract_issue_urls(l).forEach((i) => deps.push(i))
             }
 
-            all_links = extract_issue_urls(body).concat(extract_issue_numbers(body).map((num) => new IssueLink(GITHUB_HOSTNAME, owner, repo, num)))
+            extract_issue_urls(body).forEach((i) => all_links.push(i))
+            extract_issue_numbers(body).forEach((num) => all_links.push(new IssueLink(GITHUB_HOSTNAME, owner, repo, num)))
         }
     })
+    await octokit.rest.issues.listEventsForTimeline({owner: owner, repo: repo, issue_number: issue_number, per_page: 100}).then(({data})=>{
+        data.forEach((e) => {
+            if(e.event == "cross-referenced"){
+                let _e: any = e // typescript hide typing errors
+                let cre: {source: {type:string, issue:{number: number, repository: {name: string, owner: {login: string}}}}} = _e
+                if(cre.source.type != "issue"){
+                    console.error("unknown cross reference type")
+                }
+                let issue_number = cre.source.issue.number
+                let issue_repo = cre.source.issue.repository.name
+                let issue_owner = cre.source.issue.repository.owner.login
+                let link = new IssueLink(GITHUB_HOSTNAME, issue_owner, issue_repo, issue_number)
+                all_links.push(link)
+            }
+        })
+    })
+    
     let related: Relationship[] = [];
     deps.forEach( (a) => {if(related.find(b => IssueLink.same(a, b.link)) === undefined) related.push(new Relationship(a, true))});
     // any leftovers are just links
