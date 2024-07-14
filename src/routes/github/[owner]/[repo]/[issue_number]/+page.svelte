@@ -7,10 +7,7 @@
 	import { onMount } from "svelte";
     import { Graph } from "$lib/graph";
     export let data: {owner: string, repo: string, issue_number: number};
-    import { PUBLIC_CLIENT_ID, PUBLIC_CLIENT_SECRET } from '$env/static/public';
-
-    const client_id = PUBLIC_CLIENT_ID
-    const client_secret = PUBLIC_CLIENT_SECRET // github does not support PKCE
+    
 	let access_token: string|null = null
     let graph: Graph
 
@@ -18,43 +15,6 @@
 
 	let loading: Promise<any> = Promise.resolve()
 	let loading_text = ""
-		
-	async function fetch_access_token(authorization_code: string){
-		loading_text = "fetching access token"
-        let resp = await fetch(`https://github.com/login/oauth/access_token?client_id=${client_id}&code=${authorization_code}&client_secret=${client_secret}`, {
-            method: "POST",
-            headers: {
-                "Accept": "application/json"
-            }
-        })
-        let data = await resp.json()
-        if(data.error_description){
-            if(data.error == "bad_verification_code"){
-                window.location.assign(window.location.href.split("?")[0])
-                return Promise.reject(data.error_description);
-            }
-            return Promise.reject(data.error_description);
-        }
-		await new Promise((resolve) => setTimeout(resolve, 3000));
-        if(data.access_token){
-            access_token = data.access_token;
-            localStorage.setItem("access_token", data.access_token)
-        }else{
-            return Promise.reject("access token missing in reponse");
-        }
-	}
-
-	async function authenticate_client(){
-		// authenticates as app based on request URLs
-		loading_text = "authenticating the client"
-		octokit = new Octokit({ auth: access_token });   
-		const { data: { login } } = await octokit.rest.users.getAuthenticated();
-        console.log("loaded");
-	}
-
-	function loginWithGithub(){
-		window.location.assign(`https://github.com/login/oauth/authorize?client_id=${client_id}&redirect_uri=${window.location.href.split(/&code=/)[0]}`)
-	}
 	
     function update(){
 		let want = want_links(graph)
@@ -81,49 +41,29 @@
         }
     }
     onMount(()=>{
-        const queryString = window.location.search;
-		const urlparam = new URLSearchParams(queryString)
-        const authorization_code = urlparam.get("code")
-        
         access_token = localStorage.getItem("access_token")
         console.log("access_token: ", access_token)
         if(access_token){
-		    loading = authenticate_client().then(() => {
-                loading = init_graph(data.owner, data.repo, data.issue_number)
-            })
+            octokit = new Octokit({ auth: access_token });
+		    loading_text = "authenticating the client"
+		    loading = octokit.rest.users.getAuthenticated().then(async () => 
+                init_graph(data.owner, data.repo, data.issue_number)
+            )
         } 
         else{
-            if(authorization_code){
-                loading = fetch_access_token(authorization_code).then(()=>{
-                    loading = authenticate_client().then(() => {
-                        loading = init_graph(data.owner, data.repo, data.issue_number)
-                    })
-                })
-            }else{
-                console.log("redirect_uri",window.location.href.split(/&code=/)[0])
-            }
+            window.location.assign(`/github/`)
         }
     })
 </script>
 
 <main>
-	{#await loading}
+    {#await loading}
         {loading_text}<br>
         <Spinner/>
-    {:then number}
-        {#if access_token}
-            ✅
-        {:else}
-            <button on:click={loginWithGithub}>
-                Login with Github
-            </button>
-        {/if}
     {:catch error}
         ❌ {error}
     {/await}
-    {#if access_token}
-        {#if graph !== undefined}
-            <DepViz bind:graph={graph} />
-        {/if}
+    {#if graph !== undefined}
+        <DepViz bind:graph={graph} />
     {/if}
 </main>
