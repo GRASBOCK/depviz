@@ -11,7 +11,7 @@
     {#if node.data === null}❓{/if}
     {#if node.dependencies.length > 0}->{/if}
     {#each node.dependencies as dependency, i}
-        <a href={node.link.url()}>{dependency.number}</a>&nbsp
+        <a href={dependency.url()}>{dependency.number}</a>&nbsp
     {/each}
     </li>
 {/each}
