@@ -90,7 +90,6 @@ export class Graph{
             const connected_index = e.connects(i)
             if(connected_index){
                 const other_node = this.nodes[connected_index]
-                console.log("other_node:", other_node)
                 const is_dependency = e.type == EdgeType.RelatesTo ? false : true
                 if(!other_node){
                     throw  `connected index ${connected_index} is invalid for edge ${JSON.stringify(e)}; graph: ${JSON.stringify(this)}`

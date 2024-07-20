@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { Graph, Node } from "./graph";
+    import { EdgeType, Graph, Node } from "./graph";
     import * as vis from 'vis-network'
     import {DataSet} from 'vis-data'
     import { onMount } from "svelte";
@@ -28,15 +28,24 @@
 
         // create an array with edges
         let vis_edges: vis.DataInterfaceEdges
-        let edges: { id: number, from: number, to: number, arrows: {to: {enabled: boolean, type: string}}, dashes: boolean}[] = []
-        let i = 0
-        graph.nodes.forEach((n, ni) => {
-            graph.relationships(n).forEach((r) => {
-                console.log(r)
-                let ri = graph.nodes.findIndex(b => Node.same(r.node, b))
-                edges.push({ id: i, from: ri, to: ni, arrows: {to: {enabled: r.dependency,
-                    type: "arrow"}}, dashes: !r.dependency })
-                i++
+        let edges: { id: number, from: number, to: number, arrows: string, dashes: boolean, color: string}[] = []
+        graph.edges.forEach((e, i) => {
+            let arrows = ""
+            let color = "black"
+            switch(e.type){
+                case EdgeType.RelatesTo: arrows = ""
+                break;
+                case EdgeType.DependsOn: arrows = "to"
+                break;
+                case EdgeType.CircularDependency: {
+                    color = "red"
+                    arrows = "to, from"
+                }
+                break;
+            }
+            e.type != EdgeType.RelatesTo
+            edges.push({
+                id: i, from: e.b, to: e.a, arrows: arrows, dashes: e.type == EdgeType.RelatesTo, color: color
             })
         })
         vis_edges = new DataSet(edges);

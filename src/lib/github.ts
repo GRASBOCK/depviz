@@ -50,7 +50,6 @@ export async function fetch_issuenode(octokit: Octokit, owner: string, repo: str
     node = await octokit.rest.issues.get({owner: owner, repo: repo, issue_number: issue_number})
         .then(({data: issue})=> new Node(node.host, node.owner, node.repo, node.number, new IssueData()))
         .catch((e: any) => {
-            console.error("Failed to fetch issue", e)
             return new Node(node.host, node.owner, node.repo, node.number, null)
         })
     if(node.data === null){
@@ -124,17 +123,32 @@ export async function update_issuegraph(octokit: Octokit, graph: Graph, want: No
                 // update existing
                 graph.nodes[ni].data = node.data
             }
-            graph.edges = graph.edges.concat(relationships.map((r) => {
+            const new_nodes = relationships.map((r) => 
+                graph.nodes.find(b => Node.same(r.node, b)) ? null : r.node
+            ).filter(n => n !== null)
+            graph.nodes = graph.nodes.concat(new_nodes)
+            const new_edges = relationships.map((r) => {
                 const nj = graph.nodes.findIndex(b => Node.same(r.node, b))
-                let edge_type = r.dependency ? EdgeType.DependsOn : EdgeType.RelatesTo
-                if(nj < 0){
-                    graph.nodes.push(r.node)
-                    const nj = graph.nodes.findIndex(b => Node.same(r.node, b))
-                    return new Edge(ni, nj, edge_type)
+                const e = graph.edges.find(e => e.connects(nj))
+                const edge_type = r.dependency ? EdgeType.DependsOn : EdgeType.RelatesTo
+                if(e){
+                    if(edge_type == EdgeType.DependsOn && e.a == nj){
+                        if(e.type == EdgeType.RelatesTo){
+                            // swap and make edge a dependency type
+                            e.a = ni
+                            e.b = nj
+                            e.type = edge_type
+                        }else{
+                            e.type = EdgeType.CircularDependency
+                        }
+                    }
+                    return null
                 }else{
+                    // edge does not exist yet
                     return new Edge(ni, nj, edge_type)
                 }
-            }))
+            }).filter(e => e !== null)
+            graph.edges = graph.edges.concat(new_edges)
             // todo: prune edges for duplicates
         }).catch((e)=>{
             console.error(e)
