@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { Octokit } from "octokit";
-    import { fetch_issuenode, update_issuegraph, want_links } from "$lib/github"
+    import { fetch_issuenode, GITHUB_HOSTNAME, update_issuegraph, want_links } from "$lib/github"
 	import Spinner from '$lib/Spinner.svelte';
     import DepViz from '$lib/DepViz.svelte';
 	import { onMount } from "svelte";
-    import { Graph } from "$lib/graph";
+    import { Graph, Node} from "$lib/graph";
 	import { base } from "$app/paths";
     
     export let data: {owner: string, repo: string, issue_number: number};
@@ -33,13 +33,18 @@
     
     async function init_graph(owner: string, repo: string, issue_number: number) {
         loading_text = "fetching root issue"
-        const n = await fetch_issuenode(octokit, owner, repo, issue_number)
+        const n = new Node(GITHUB_HOSTNAME, owner, repo, issue_number)
+        graph = new Graph(n)
+        update()
+        //const n, relationships = await fetch_issuenode(octokit, owner, repo, issue_number)
+        /*
         if(n){
-            graph = new Graph([n])
+            graph = new Graph([n], [])
             update()
         }else{
             return Promise.reject("Initial node does not exist")
         }
+            */
     }
     onMount(()=>{
         access_token = localStorage.getItem("access_token")

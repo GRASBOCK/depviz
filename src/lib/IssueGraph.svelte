@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { Graph, Node, IssueLink } from "./graph";
+    import { EdgeType, Graph, Node } from "./graph";
     import * as vis from 'vis-network'
     import {DataSet} from 'vis-data'
     import { onMount } from "svelte";
@@ -14,28 +14,38 @@
     })
 
     export let on_select = function (node: Node){
-        window.open(node.link.url(), '_blank');
-        console.log("Selection: " + node.link.url())
+        window.open(node.url(), '_blank');
+        console.log("Selection: " + node.url())
     }
 
     function draw(graph: Graph) {
         // create an array with nodes
         var nodes = new DataSet(graph.nodes.map((n, ni) => {
-            let label = `#${n.link.number}`
+            let label = `#${n.number}`
             if(n.data == null) label = `${label} ❓`
             return { id: ni, label: label }; 
         }));
 
         // create an array with edges
         let vis_edges: vis.DataInterfaceEdges
-        let edges: { id: number, from: number, to: number, arrows: {to: {enabled: boolean, type: string}}, dashes: boolean}[] = []
-        let i = 0
-        graph.nodes.forEach((n, ni) => {
-            n.related.forEach((r) => {
-                let ri = graph.nodes.findIndex(b => IssueLink.same(r.link, b.link))
-                edges.push({ id: i, from: ri, to: ni, arrows: {to: {enabled: r.dependency,
-                    type: "arrow"}}, dashes: !r.dependency })
-                i++
+        let edges: { id: number, from: number, to: number, arrows: string, dashes: boolean, color: string}[] = []
+        graph.edges.forEach((e, i) => {
+            let arrows = ""
+            let color = "black"
+            switch(e.type){
+                case EdgeType.RelatesTo: arrows = ""
+                break;
+                case EdgeType.DependsOn: arrows = "to"
+                break;
+                case EdgeType.CircularDependency: {
+                    color = "red"
+                    arrows = "to, from"
+                }
+                break;
+            }
+            e.type != EdgeType.RelatesTo
+            edges.push({
+                id: i, from: e.b, to: e.a, arrows: arrows, dashes: e.type == EdgeType.RelatesTo, color: color
             })
         })
         vis_edges = new DataSet(edges);
