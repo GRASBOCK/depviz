@@ -1,29 +1,27 @@
 <script lang="ts">
 	import IssueTable from './IssueTable.svelte';
 	import IssueGraph from './IssueGraph.svelte';
-	import { Graph } from "./graph";
+	import { Graph } from './graph';
 
-	export let graph: Graph
-	
+	export let graph: Graph;
+
 	let tabs = [
-		{ name: "Table", comp: IssueTable },
-		{ name: "Graph", comp: IssueGraph },
+		{ name: 'Table', comp: IssueTable },
+		{ name: 'Graph', comp: IssueGraph }
 	];
 
 	let cur = tabs[0];
 </script>
 
 <div class="tabs">
-{#each tabs as tab}
-	<button class:selected={cur === tab} on:click={() => (cur = tab)}>
-		{tab.name}
-	</button>
-{/each}
+	{#each tabs as tab}
+		<button class:selected={cur === tab} on:click={() => (cur = tab)}>
+			{tab.name}
+		</button>
+	{/each}
 </div>
 <main>
-    
-	<svelte:component this={cur.comp} graph={graph} />
-    
+	<svelte:component this={cur.comp} {graph} />
 </main>
 
 <style>
