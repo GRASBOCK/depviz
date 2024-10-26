@@ -32,9 +32,7 @@
 		// create an array with nodes
 		var nodes = new DataSet(
 			graph.nodes.map((n, ni) => {
-				let label = `#${n.url.split('/')[3]}`;
-				if (n.issue.data == null) label = `${label} ❓`;
-				return { id: ni, label: label };
+				return { id: ni, label: n.issue.label() };
 			})
 		);
 
