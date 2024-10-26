@@ -96,6 +96,10 @@ export class GitHubHandler {
 						);
 						extract_issue_urls(l).forEach((i) => is_blocked_by.push(i));
 					}
+					extract_issue_numbers(body).forEach((num) =>
+						relates_to.push(url_from_path(owner, repo, num))
+					);
+					extract_issue_urls(body).forEach((i) => relates_to.push(i));
 				}
 			});
 		await this.octokit.rest.issues

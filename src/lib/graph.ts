@@ -87,7 +87,18 @@ export function construct_graph(issues: Issue[]): Graph {
 			if (b_index < 0) {
 				console.error(`is_blocked_by url not found in nodes; url: ${b_url}`);
 			} else {
-				edges.push(new Edge(i, b_index, EdgeType.DependsOn));
+				const circular_dependency_edge_index = edges.findIndex((e) => e.a === i && e.b === b_index);
+				if (circular_dependency_edge_index < 0) {
+					const existing_edge_index = edges.findIndex((e) => e.a === b_index && e.b === i);
+					if (existing_edge_index < 0) {
+						edges.push(new Edge(b_index, i, EdgeType.DependsOn));
+					} else {
+						// override relates to with depends on
+						edges[existing_edge_index] = new Edge(b_index, i, EdgeType.DependsOn);
+					}
+				} else {
+					edges[circular_dependency_edge_index].type = EdgeType.CircularDependency;
+				}
 			}
 		});
 		issue.blocks.forEach((b_url) => {
@@ -95,7 +106,18 @@ export function construct_graph(issues: Issue[]): Graph {
 			if (b_index < 0) {
 				console.error(`is_blocked_by url not found in nodes; url: ${b_url}`);
 			} else {
-				edges.push(new Edge(b_index, i, EdgeType.DependsOn));
+				const circular_dependency_edge_index = edges.findIndex((e) => e.a === i && e.b === b_index);
+				if (circular_dependency_edge_index < 0) {
+					const existing_edge_index = edges.findIndex((e) => e.a === b_index && e.b === i);
+					if (existing_edge_index < 0) {
+						edges.push(new Edge(b_index, i, EdgeType.DependsOn));
+					} else {
+						// override relates to with depends on
+						edges[existing_edge_index] = new Edge(b_index, i, EdgeType.DependsOn);
+					}
+				} else {
+					edges[circular_dependency_edge_index].type = EdgeType.CircularDependency;
+				}
 			}
 		});
 		issue.relates_to.forEach((b_url) => {
@@ -103,7 +125,12 @@ export function construct_graph(issues: Issue[]): Graph {
 			if (b_index < 0) {
 				console.error(`relates_to url not found in nodes; url: ${b_url}`);
 			} else {
-				edges.push(new Edge(i, b_index, EdgeType.RelatesTo));
+				const existing_edge_index = edges.findIndex(
+					(e) => (e.a === i && e.b === b_index) || (e.a === b_index && e.b === i)
+				);
+				if (existing_edge_index < 0) {
+					edges.push(new Edge(i, b_index, EdgeType.RelatesTo));
+				}
 			}
 		});
 	}

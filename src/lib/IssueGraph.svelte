@@ -54,7 +54,7 @@
 					arrows = '';
 					break;
 				case EdgeType.DependsOn:
-					arrows = 'to';
+					arrows = 'from';
 					break;
 				case EdgeType.CircularDependency:
 					{
