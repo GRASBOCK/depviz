@@ -37,7 +37,6 @@
 		);
 
 		// create an array with edges
-		let vis_edges: vis.DataInterfaceEdges;
 		let edges: {
 			id: number;
 			from: number;
@@ -73,7 +72,6 @@
 				color: color
 			});
 		});
-		vis_edges = new DataSet(edges);
 
 		var data: vis.Data = {
 			nodes: nodes,

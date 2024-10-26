@@ -56,12 +56,12 @@ export class Graph {
 	}
 
 	relationships(node: Node): { node: Node; dependency: boolean }[] {
-		let i = this.nodes.findIndex((n) => Node.same(n, node));
+		const i = this.nodes.findIndex((n) => Node.same(n, node));
 		if (i < 0) {
 			throw `Node ${JSON.stringify(node)} not found in graph`;
 		}
 
-		let related: { node: Node; dependency: boolean }[] = [];
+		const related: { node: Node; dependency: boolean }[] = [];
 		this.edges.forEach((e) => {
 			const connected_index = e.connects(i);
 			if (connected_index) {

@@ -15,7 +15,7 @@ describe('fetch an issue', async () => {
 	} = await octokit.rest.users.getAuthenticated();
 	const client = new GitHubHandler(octokit);
 
-	let issue = await client.fetch_issue('https://github.com/octocat/Hello-World/issues/3094');
+	const issue = await client.fetch_issue('https://github.com/octocat/Hello-World/issues/3094');
 	it('issue exists', () => {
 		expect(issue);
 	});
@@ -49,7 +49,7 @@ describe('extract from tags', () => {
 		{ desc: 'only url', text: 'https://github.com/octocat/Hello-World/issues/3095', expected: [] }
 	];
 
-	for (let t of tests) {
+	for (const t of tests) {
 		it(t.desc, () => {
 			expect(extract_issue_numbers(t.text)).toEqual(t.expected);
 		});
@@ -84,7 +84,7 @@ describe('extract from url', () => {
 		{ desc: 'not a url', text: '#3095', expected: [] }
 	];
 
-	for (let t of tests) {
+	for (const t of tests) {
 		it(t.desc, () => {
 			expect(extract_issue_urls(t.text)).toEqual(t.expected);
 		});
@@ -109,7 +109,7 @@ describe('issue text extraction', () => {
 		{ desc: 'without', text: 'some text without dependencies', expected: [] }
 	];
 
-	for (let t of tests) {
+	for (const t of tests) {
 		it(t.desc, () => {
 			expect(extract_dependency_lines(t.text)).toEqual(t.expected);
 		});

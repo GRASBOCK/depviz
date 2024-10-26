@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { Octokit } from 'octokit';
-	import { GITHUB_HOSTNAME, GitHubHandler } from '$lib/github';
+	import { GitHubHandler } from '$lib/github';
 	import Spinner from '$lib/Spinner.svelte';
 	import DepViz from '$lib/DepViz.svelte';
 	import { onMount } from 'svelte';
-	import { construct_graph, Graph, Node } from '$lib/graph';
+	import { construct_graph, Graph } from '$lib/graph';
 	import { base } from '$app/paths';
 	import { Client } from '$lib/client';
 	import { Issue } from '$lib/issue';

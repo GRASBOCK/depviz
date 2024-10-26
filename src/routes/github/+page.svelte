@@ -3,7 +3,6 @@
 	import { base } from '$app/paths';
 
 	let url = `https://github.com/octocat/Hello-World/issues/3094`;
-	let valid_input = false;
 
 	let access_token: string | null = null;
 	let authenticate = false;
