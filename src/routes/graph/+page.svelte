@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Octokit } from 'octokit';
-	import { GITHUB_HOSTNAME, GitHubClient } from '$lib/github';
+	import { GITHUB_HOSTNAME, GitHubHandler } from '$lib/github';
 	import Spinner from '$lib/Spinner.svelte';
 	import DepViz from '$lib/DepViz.svelte';
 	import { onMount } from 'svelte';
@@ -57,7 +57,7 @@
 			const url = urlParams.get('url');
 			if (url) {
 				octokit = new Octokit({ auth: access_token });
-				client.github_client = new GitHubClient(octokit);
+				client.handlers.push(new GitHubHandler(octokit));
 				loading_text = 'authenticating the client';
 				loading = octokit.rest.users.getAuthenticated().then(async () => {
 					loading_text = 'fetching root issue';

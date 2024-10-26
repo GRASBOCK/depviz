@@ -3,7 +3,7 @@ import {
 	extract_issue_numbers,
 	extract_issue_urls,
 	extract_dependency_lines,
-	GitHubClient
+	GitHubHandler
 } from '$lib/github';
 import { Octokit } from 'octokit';
 import { ACCESS_TOKEN } from '$env/static/private';
@@ -13,7 +13,7 @@ describe('fetch an issue', async () => {
 	const {
 		data: { login }
 	} = await octokit.rest.users.getAuthenticated();
-	const client = new GitHubClient(octokit);
+	const client = new GitHubHandler(octokit);
 
 	let issue = await client.fetch_issue('https://github.com/octocat/Hello-World/issues/3094');
 	it('issue exists', () => {

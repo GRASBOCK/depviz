@@ -53,12 +53,15 @@ function url_from_path(owner: string, repo: string, number: number) {
 	return `https://github.com/${owner}/${repo}/issues/${number}`;
 }
 
-export class GitHubClient {
+export class GitHubHandler {
 	octokit: Octokit;
 	constructor(octokit: Octokit) {
 		this.octokit = octokit;
 	}
-	async fetch_issue(url: string): Promise<Issue> {
+	async fetch_issue(url: string): Promise<Issue|null> {
+		if (!url.includes('github')) {
+			return null // not the correct handler
+		}
 		const path = new URL(url).pathname.split('/');
 		if (path.length < 4) {
 			throw Error('does not contain all path components');
