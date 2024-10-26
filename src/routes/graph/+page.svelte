@@ -15,7 +15,7 @@
 	let octokit: Octokit;
 	const client = new Client();
 
-	let issues: Map<string,Issue> = new Map<string, Issue>();
+	let issues: Map<string, Issue> = new Map<string, Issue>();
 
 	let loading: Promise<any> = Promise.resolve();
 	let loading_text = '';
@@ -23,8 +23,8 @@
 	async function update() {
 		loading_text = 'updating issue graph';
 		const promises = Array.from(issues.values())
-			.filter(issue => issue.data === undefined)
-			.map(async issue => {
+			.filter((issue) => issue.data === undefined)
+			.map(async (issue) => {
 				const fresh_issue = await client.fetch_issue(issue.url);
 				if (fresh_issue) {
 					issues.set(issue.url, fresh_issue);
@@ -34,15 +34,15 @@
 						}
 					}
 					fresh_issue.is_blocked_by.forEach(add_if_new);
-                    fresh_issue.relates_to.forEach(add_if_new);
-                    fresh_issue.blocks.forEach(add_if_new);
+					fresh_issue.relates_to.forEach(add_if_new);
+					fresh_issue.blocks.forEach(add_if_new);
 				}
 			});
 		loading = Promise.allSettled(promises).then(async () => {
 			graph = construct_graph(Array.from(issues.values()));
 		});
-        await loading
-		if (Array.from(issues.values()).filter(issue => issue.data === undefined).length > 0) {
+		await loading;
+		if (Array.from(issues.values()).filter((issue) => issue.data === undefined).length > 0) {
 			new Promise((resolve) => setTimeout(resolve, 1)).then(update);
 		} else {
 			new Promise((resolve) => setTimeout(resolve, 10000)).then(update);
@@ -62,7 +62,7 @@
 				loading = octokit.rest.users.getAuthenticated().then(async () => {
 					loading_text = 'fetching root issue';
 					issues.set(url, new Issue(url));
-                    graph = construct_graph(Array.from(issues.values()));
+					graph = construct_graph(Array.from(issues.values()));
 					new Promise((resolve) => setTimeout(resolve, 1)).then(update);
 				});
 			} else {

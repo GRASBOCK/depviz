@@ -21,18 +21,18 @@ describe('fetch an issue', async () => {
 	});
 
 	it('issue dependencies', () => {
-        const is_blocked_by = [
-            "https://github.com/octocat/Hello-World/issues/3095", 
-            "https://github.com/octocat/Hello-World/issues/3087", 
-            "https://github.com/octocat/Hello-World/issues/3089",
-            "https://github.com/octocat/Hello-World/issues/3043",
-            "https://github.com/octocat/Spoon-Knife/issues/33081",
-        ]
-        expect(is_blocked_by.sort()).toEqual(issue.is_blocked_by.sort());
-        const relates_to = [
-            "https://github.com/octocat/Hello-World/issues/3130",
-            "https://github.com/octocat/Hello-World/issues/3095"
-        ]
+		const is_blocked_by = [
+			'https://github.com/octocat/Hello-World/issues/3095',
+			'https://github.com/octocat/Hello-World/issues/3087',
+			'https://github.com/octocat/Hello-World/issues/3089',
+			'https://github.com/octocat/Hello-World/issues/3043',
+			'https://github.com/octocat/Spoon-Knife/issues/33081'
+		];
+		expect(is_blocked_by.sort()).toEqual(issue.is_blocked_by.sort());
+		const relates_to = [
+			'https://github.com/octocat/Hello-World/issues/3130',
+			'https://github.com/octocat/Hello-World/issues/3095'
+		];
 		expect(relates_to.sort()).toEqual(issue.relates_to.sort());
 	});
 });

@@ -58,9 +58,9 @@ export class GitHubHandler {
 	constructor(octokit: Octokit) {
 		this.octokit = octokit;
 	}
-	async fetch_issue(url: string): Promise<Issue|null> {
+	async fetch_issue(url: string): Promise<Issue | null> {
 		if (!url.includes('github')) {
-			return null // not the correct handler
+			return null; // not the correct handler
 		}
 		const path = new URL(url).pathname.split('/');
 		if (path.length < 4) {
@@ -73,7 +73,7 @@ export class GitHubHandler {
 			.get({ owner: owner, repo: repo, issue_number: issue_number })
 			.then(({ data: issue }) => new IssueData())
 			.catch((e: any) => {
-                console.error(`couldn't fetch issue data for issue ${issue_number}`)
+				console.error(`couldn't fetch issue data for issue ${issue_number}`);
 				return null;
 			});
 		if (issue_data === null) {

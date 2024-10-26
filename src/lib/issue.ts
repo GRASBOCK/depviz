@@ -26,12 +26,12 @@ export class Issue {
 	}
 
 	label() {
-		const url = new URL(this.url)
-		const components = url.pathname.split('/')
-		const owner = components[1]
-		const repo = components[2]
-		const number = components[4]
-		const indicator = this.data !== null ? "" : "❓";
-		return `${owner}\n${repo}\n#${number}` + indicator
+		const url = new URL(this.url);
+		const components = url.pathname.split('/');
+		const owner = components[1];
+		const repo = components[2];
+		const number = components[4];
+		const indicator = this.data !== null ? '' : '❓';
+		return `${owner}\n${repo}\n#${number}` + indicator;
 	}
 }
