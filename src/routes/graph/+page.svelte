@@ -54,14 +54,16 @@
 		if (access_token) {
 			const queryString = window.location.search;
 			const urlParams = new URLSearchParams(queryString);
-			const url = urlParams.get('url');
-			if (url) {
+			const urls = urlParams.getAll('url');
+			if (urls.length > 0) {
 				octokit = new Octokit({ auth: access_token });
 				client.handlers.push(new GitHubHandler(octokit));
 				loading_text = 'authenticating the client';
 				loading = octokit.rest.users.getAuthenticated().then(async () => {
 					loading_text = 'fetching root issue';
-					issues.set(url, new Issue(url));
+					urls.forEach(url => {
+						issues.set(url, new Issue(url));
+					});
 					graph = construct_graph(Array.from(issues.values()));
 					new Promise((resolve) => setTimeout(resolve, 1)).then(update);
 				});

@@ -16,6 +16,10 @@
 			authenticate = true;
 		}
 	});
+
+	let urls: string[] = ["https://github.com/octocat/Hello-World/issues/3094"]
+	let url_next = ""
+	$: url_params = new URLSearchParams(Array.from(urls.map(v => ["url", v])))
 </script>
 
 <main>
@@ -34,8 +38,11 @@
 		this changes, <a href="https://github.com/GRASBOCK/depviz/issues/3">let me know</a>.
 	{:else}
 		<p>Choose your root issue</p>
-		<input bind:value={url} />
-		<a href={`${base}/graph?url=${encodeURIComponent(url)}`}>GitHub</a>
+		{#each urls as url}
+			<input bind:value={url} /><br>
+		{/each}
+		<input bind:value={url_next} on:change={() => { urls.push(url_next); urls = urls; url_next = ""; console.log(urls); }}/><br>
+		<a href={`${base}/graph?${url_params}`}>GitHub</a>
 		<br />
 		<button
 			on:click={() => {
