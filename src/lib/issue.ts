@@ -33,7 +33,7 @@ export class Issue {
 		const owner = components[1];
 		const repo = components[2];
 		const number = components[4];
-		const indicator = this.data !== null ? (this.data instanceof NoHandler? "⚠️" : "") : '❓';
+		const indicator = this.data !== null ? (this.data instanceof NoHandler ? '⚠️' : '') : '❓';
 		return `${owner}\n${repo}\n#${number}` + indicator;
 	}
 }

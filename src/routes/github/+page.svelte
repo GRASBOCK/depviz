@@ -17,9 +17,9 @@
 		}
 	});
 
-	let urls: string[] = ["https://github.com/octocat/Hello-World/issues/3094"]
-	let url_next = ""
-	$: url_params = new URLSearchParams(Array.from(urls.map(v => ["url", v])))
+	let urls: string[] = ['https://github.com/octocat/Hello-World/issues/3094'];
+	let url_next = '';
+	$: url_params = new URLSearchParams(Array.from(urls.map((v) => ['url', v])));
 </script>
 
 <main>
@@ -39,9 +39,17 @@
 	{:else}
 		<p>Choose your root issue</p>
 		{#each urls as url}
-			<input bind:value={url} /><br>
+			<input bind:value={url} /><br />
 		{/each}
-		<input bind:value={url_next} on:change={() => { urls.push(url_next); urls = urls; url_next = ""; console.log(urls); }}/><br>
+		<input
+			bind:value={url_next}
+			on:change={() => {
+				urls.push(url_next);
+				urls = urls;
+				url_next = '';
+				console.log(urls);
+			}}
+		/><br />
 		<a href={`${base}/graph?${url_params}`}>GitHub</a>
 		<br />
 		<button

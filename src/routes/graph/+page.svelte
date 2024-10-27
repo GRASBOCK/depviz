@@ -7,7 +7,7 @@
 	import { construct_graph, Graph } from '$lib/graph';
 	import { base } from '$app/paths';
 	import { Client } from '$lib/client';
-	import { Issue } from '$lib/issue';
+	import { Issue, IssueData } from '$lib/issue';
 
 	let access_token: string | null = null;
 	let graph: Graph;
@@ -26,7 +26,7 @@
 			.filter((issue) => issue.data === undefined)
 			.map(async (issue) => {
 				const fresh_issue = await client.fetch_issue(issue.url);
-				if (fresh_issue) {
+				if (fresh_issue.data) {
 					issues.set(issue.url, fresh_issue);
 					function add_if_new(b_url: string) {
 						if (!issues.has(b_url)) {
@@ -36,9 +36,8 @@
 					fresh_issue.is_blocked_by.forEach(add_if_new);
 					fresh_issue.relates_to.forEach(add_if_new);
 					fresh_issue.blocks.forEach(add_if_new);
-				}else{
-					console.error("issue couldn't be fetched ", issue.url)
-					issues.set(issue.url, new Issue(issue.url, null));
+				} else {
+					issues.set(issue.url, fresh_issue);
 				}
 			});
 		loading = Promise.allSettled(promises).then(async () => {
@@ -64,7 +63,7 @@
 				loading_text = 'authenticating the client';
 				loading = octokit.rest.users.getAuthenticated().then(async () => {
 					loading_text = 'fetching root issue';
-					urls.forEach(url => {
+					urls.forEach((url) => {
 						issues.set(url, new Issue(url));
 					});
 					graph = construct_graph(Array.from(issues.values()));
