@@ -1,6 +1,6 @@
 import { Octokit } from 'octokit';
-import { IssueData } from './graph';
-import { Issue } from '$lib/issue';
+import { Issue, IssueData } from '$lib/issue';
+import { IssueFetchError } from './client';
 
 export const GITHUB_HOSTNAME: string = 'github';
 
@@ -58,13 +58,13 @@ export class GitHubHandler {
 	constructor(octokit: Octokit) {
 		this.octokit = octokit;
 	}
-	async fetch_issue(url: string): Promise<Issue | null> {
+	async fetch_issuedata(url: string): Promise<IssueData> {
 		if (!url.includes('github')) {
-			return null; // not the correct handler
+			throw IssueFetchError.CANT_HANDLE;
 		}
 		const path = new URL(url).pathname.split('/');
 		if (path.length < 4) {
-			throw Error('does not contain all path components');
+			throw IssueFetchError.CANT_HANDLE;
 		}
 		const owner = path[1];
 		const repo = path[2];
@@ -72,13 +72,9 @@ export class GitHubHandler {
 		const issue_data = await this.octokit.rest.issues
 			.get({ owner: owner, repo: repo, issue_number: issue_number })
 			.then(({ data: issue }) => new IssueData())
-			.catch((e) => {
-				console.error(`couldn't fetch issue data for issue ${issue_number}`);
-				return null;
-			});
-		if (issue_data === null) {
-			return new Issue(url, null);
-		}
+			.catch(()=>{
+				throw IssueFetchError.FETCH_FAILED;
+			})
 		const is_blocked_by: string[] = [];
 		const blocks: string[] = [];
 		const relates_to: string[] = [];
@@ -130,12 +126,9 @@ export class GitHubHandler {
 					}
 				});
 			});
-		return new Issue(
-			url,
-			issue_data,
-			Array.from(new Set(is_blocked_by)),
-			Array.from(new Set(blocks)),
-			Array.from(new Set(relates_to))
-		);
+		issue_data.is_blocked_by = Array.from(new Set(is_blocked_by))
+		issue_data.blocks = Array.from(new Set(blocks))
+		issue_data.relates_to = Array.from(new Set(relates_to))
+		return issue_data;
 	}
 }

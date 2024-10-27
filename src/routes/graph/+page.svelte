@@ -7,7 +7,7 @@
 	import { construct_graph, Graph } from '$lib/graph';
 	import { base } from '$app/paths';
 	import { Client } from '$lib/client';
-	import { Issue } from '$lib/issue';
+	import { Issue, IssueData } from '$lib/issue';
 
 	let access_token: string | null = null;
 	let graph: Graph;
@@ -25,20 +25,20 @@
 		const promises = Array.from(issues.values())
 			.filter((issue) => issue.data === undefined)
 			.map(async (issue) => {
-				const fresh_issue = await client.fetch_issue(issue.url);
-				if (fresh_issue.data) {
-					issues.set(issue.url, fresh_issue);
+				const issue_data = await client.fetch_issuedata(issue.url);
+				issue.data = issue_data
+				issues.set(issue.url, issue);
+				if (issue_data instanceof IssueData) {
 					function add_if_new(b_url: string) {
 						if (!issues.has(b_url)) {
 							issues.set(b_url, new Issue(b_url));
 						}
 					}
-					fresh_issue.is_blocked_by.forEach(add_if_new);
-					fresh_issue.relates_to.forEach(add_if_new);
-					fresh_issue.blocks.forEach(add_if_new);
-				} else {
-					issues.set(issue.url, fresh_issue);
+					issue_data.is_blocked_by.forEach(add_if_new);
+					issue_data.relates_to.forEach(add_if_new);
+					issue_data.blocks.forEach(add_if_new);
 				}
+				
 			});
 		loading = Promise.allSettled(promises).then(async () => {
 			graph = construct_graph(Array.from(issues.values()));

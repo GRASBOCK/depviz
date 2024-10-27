@@ -1,24 +1,24 @@
-import { Issue } from '$lib/issue';
+import { Issue, IssueData } from '$lib/issue';
 
 export class Node {
-	url: string;
 	issue: Issue; // issue data = successful, null = broken link, undefined = not fetched yet
 
-	constructor(url: string, issue: Issue) {
-		this.url = url;
+	constructor(issue: Issue) {
 		this.issue = issue;
 	}
 
+	url() {
+		return this.issue.url
+	}
+
 	static compare(a: Node, b: Node) {
-		return a.url.localeCompare(b.url);
+		return a.issue.url.localeCompare(b.issue.url);
 	}
 
 	static same(x: Node, y: Node) {
-		return x.url == y.url;
+		return x.issue.url == y.issue.url;
 	}
 }
-
-export class IssueData {}
 
 export enum EdgeType {
 	RelatesTo,
@@ -78,61 +78,65 @@ export class Graph {
 }
 
 export function construct_graph(issues: Issue[]): Graph {
-	const nodes = Array.from(issues, (issue) => new Node(issue.url, issue));
+	const nodes = Array.from(issues, (issue) => new Node(issue));
 	const edges: Edge[] = [];
 	for (let i = 0; i < issues.length; i++) {
 		const issue = issues[i];
-		issue.is_blocked_by.forEach((b_url) => {
-			const b_index = issues.findIndex((n) => b_url == n.url);
-			if (b_index < 0) {
-				console.error(`is_blocked_by url not found in nodes; url: ${b_url}`);
-			} else {
-				const circular_dependency_edge_index = edges.findIndex((e) => e.a === i && e.b === b_index);
-				if (circular_dependency_edge_index < 0) {
-					const existing_edge_index = edges.findIndex((e) => e.a === b_index && e.b === i);
-					if (existing_edge_index < 0) {
-						edges.push(new Edge(b_index, i, EdgeType.DependsOn));
-					} else {
-						// override relates to with depends on
-						edges[existing_edge_index] = new Edge(b_index, i, EdgeType.DependsOn);
-					}
+		const issue_data = issue.data
+		if(issue_data instanceof IssueData){
+			issue_data.is_blocked_by.forEach((b_url) => {
+				const b_index = issues.findIndex((n) => b_url == n.url);
+				if (b_index < 0) {
+					console.error(`is_blocked_by url not found in nodes; url: ${b_url}`);
 				} else {
-					edges[circular_dependency_edge_index].type = EdgeType.CircularDependency;
-				}
-			}
-		});
-		issue.blocks.forEach((b_url) => {
-			const b_index = issues.findIndex((n) => b_url == n.url);
-			if (b_index < 0) {
-				console.error(`is_blocked_by url not found in nodes; url: ${b_url}`);
-			} else {
-				const circular_dependency_edge_index = edges.findIndex((e) => e.a === i && e.b === b_index);
-				if (circular_dependency_edge_index < 0) {
-					const existing_edge_index = edges.findIndex((e) => e.a === b_index && e.b === i);
-					if (existing_edge_index < 0) {
-						edges.push(new Edge(b_index, i, EdgeType.DependsOn));
+					const circular_dependency_edge_index = edges.findIndex((e) => e.a === i && e.b === b_index);
+					if (circular_dependency_edge_index < 0) {
+						const existing_edge_index = edges.findIndex((e) => e.a === b_index && e.b === i);
+						if (existing_edge_index < 0) {
+							edges.push(new Edge(b_index, i, EdgeType.DependsOn));
+						} else {
+							// override relates to with depends on
+							edges[existing_edge_index] = new Edge(b_index, i, EdgeType.DependsOn);
+						}
 					} else {
-						// override relates to with depends on
-						edges[existing_edge_index] = new Edge(b_index, i, EdgeType.DependsOn);
+						edges[circular_dependency_edge_index].type = EdgeType.CircularDependency;
 					}
+				}
+			});
+			issue_data.blocks.forEach((b_url) => {
+				const b_index = issues.findIndex((n) => b_url == n.url);
+				if (b_index < 0) {
+					console.error(`is_blocked_by url not found in nodes; url: ${b_url}`);
 				} else {
-					edges[circular_dependency_edge_index].type = EdgeType.CircularDependency;
+					const circular_dependency_edge_index = edges.findIndex((e) => e.a === i && e.b === b_index);
+					if (circular_dependency_edge_index < 0) {
+						const existing_edge_index = edges.findIndex((e) => e.a === b_index && e.b === i);
+						if (existing_edge_index < 0) {
+							edges.push(new Edge(b_index, i, EdgeType.DependsOn));
+						} else {
+							// override relates to with depends on
+							edges[existing_edge_index] = new Edge(b_index, i, EdgeType.DependsOn);
+						}
+					} else {
+						edges[circular_dependency_edge_index].type = EdgeType.CircularDependency;
+					}
 				}
-			}
-		});
-		issue.relates_to.forEach((b_url) => {
-			const b_index = issues.findIndex((n) => b_url == n.url);
-			if (b_index < 0) {
-				console.error(`relates_to url not found in nodes; url: ${b_url}`);
-			} else {
-				const existing_edge_index = edges.findIndex(
-					(e) => (e.a === i && e.b === b_index) || (e.a === b_index && e.b === i)
-				);
-				if (existing_edge_index < 0) {
-					edges.push(new Edge(i, b_index, EdgeType.RelatesTo));
+			});
+			issue_data.relates_to.forEach((b_url) => {
+				const b_index = issues.findIndex((n) => b_url == n.url);
+				if (b_index < 0) {
+					console.error(`relates_to url not found in nodes; url: ${b_url}`);
+				} else {
+					const existing_edge_index = edges.findIndex(
+						(e) => (e.a === i && e.b === b_index) || (e.a === b_index && e.b === i)
+					);
+					if (existing_edge_index < 0) {
+						edges.push(new Edge(i, b_index, EdgeType.RelatesTo));
+					}
 				}
-			}
-		});
+			});
+		}
+		
 	}
 	return new Graph(nodes, edges);
 }

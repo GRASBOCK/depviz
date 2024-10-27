@@ -24,8 +24,8 @@
 	});
 
 	export let on_select = function (node: Node) {
-		window.open(node.url, '_blank');
-		console.log('Selection: ' + node.url);
+		window.open(node.issue.url, '_blank');
+		console.log('Selection: ' + node.issue.url);
 	};
 
 	function draw(graph: Graph) {
