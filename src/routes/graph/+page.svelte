@@ -7,7 +7,7 @@
 	import { construct_graph, Graph } from '$lib/graph';
 	import { base } from '$app/paths';
 	import { Client } from '$lib/client';
-	import { Issue, IssueData } from '$lib/issue';
+	import { Issue } from '$lib/issue';
 
 	let access_token: string | null = null;
 	let graph: Graph;
