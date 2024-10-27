@@ -36,6 +36,9 @@
 					fresh_issue.is_blocked_by.forEach(add_if_new);
 					fresh_issue.relates_to.forEach(add_if_new);
 					fresh_issue.blocks.forEach(add_if_new);
+				}else{
+					console.error("issue couldn't be fetched ", issue.url)
+					issues.set(issue.url, new Issue(issue.url, null));
 				}
 			});
 		loading = Promise.allSettled(promises).then(async () => {

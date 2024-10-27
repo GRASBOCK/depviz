@@ -1,4 +1,4 @@
-import type { Issue } from './issue';
+import { Issue, NoHandler } from './issue';
 
 export interface Handler {
 	fetch_issue(url: string): Promise<Issue | null>;
@@ -15,6 +15,6 @@ export class Client {
 				return issue;
 			}
 		}
-		throw Error('unknown url type');
+		return new Issue(url, new NoHandler());
 	}
 }
