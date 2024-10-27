@@ -8,7 +8,7 @@ export class Node {
 	}
 
 	url() {
-		return this.issue.url
+		return this.issue.url;
 	}
 
 	static compare(a: Node, b: Node) {
@@ -82,14 +82,16 @@ export function construct_graph(issues: Issue[]): Graph {
 	const edges: Edge[] = [];
 	for (let i = 0; i < issues.length; i++) {
 		const issue = issues[i];
-		const issue_data = issue.data
-		if(issue_data instanceof IssueData){
+		const issue_data = issue.data;
+		if (issue_data instanceof IssueData) {
 			issue_data.is_blocked_by.forEach((b_url) => {
 				const b_index = issues.findIndex((n) => b_url == n.url);
 				if (b_index < 0) {
 					console.error(`is_blocked_by url not found in nodes; url: ${b_url}`);
 				} else {
-					const circular_dependency_edge_index = edges.findIndex((e) => e.a === i && e.b === b_index);
+					const circular_dependency_edge_index = edges.findIndex(
+						(e) => e.a === i && e.b === b_index
+					);
 					if (circular_dependency_edge_index < 0) {
 						const existing_edge_index = edges.findIndex((e) => e.a === b_index && e.b === i);
 						if (existing_edge_index < 0) {
@@ -108,7 +110,9 @@ export function construct_graph(issues: Issue[]): Graph {
 				if (b_index < 0) {
 					console.error(`is_blocked_by url not found in nodes; url: ${b_url}`);
 				} else {
-					const circular_dependency_edge_index = edges.findIndex((e) => e.a === i && e.b === b_index);
+					const circular_dependency_edge_index = edges.findIndex(
+						(e) => e.a === i && e.b === b_index
+					);
 					if (circular_dependency_edge_index < 0) {
 						const existing_edge_index = edges.findIndex((e) => e.a === b_index && e.b === i);
 						if (existing_edge_index < 0) {
@@ -136,7 +140,6 @@ export function construct_graph(issues: Issue[]): Graph {
 				}
 			});
 		}
-		
 	}
 	return new Graph(nodes, edges);
 }

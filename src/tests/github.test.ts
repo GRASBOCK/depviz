@@ -15,7 +15,9 @@ describe('fetch issuedata', async () => {
 	} = await octokit.rest.users.getAuthenticated();
 	const client = new GitHubHandler(octokit);
 
-	const issuedata = await client.fetch_issuedata('https://github.com/octocat/Hello-World/issues/3094');
+	const issuedata = await client.fetch_issuedata(
+		'https://github.com/octocat/Hello-World/issues/3094'
+	);
 	it('issuedata exists', () => {
 		expect(issuedata);
 	});
@@ -35,8 +37,6 @@ describe('fetch issuedata', async () => {
 		];
 		expect(relates_to.sort()).toEqual(issuedata!.relates_to.sort());
 	});
-
-	
 });
 
 describe('extract from tags', () => {

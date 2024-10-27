@@ -72,9 +72,9 @@ export class GitHubHandler {
 		const issue_data = await this.octokit.rest.issues
 			.get({ owner: owner, repo: repo, issue_number: issue_number })
 			.then(({ data: issue }) => new IssueData())
-			.catch(()=>{
+			.catch(() => {
 				throw IssueFetchError.FETCH_FAILED;
-			})
+			});
 		const is_blocked_by: string[] = [];
 		const blocks: string[] = [];
 		const relates_to: string[] = [];
@@ -126,9 +126,9 @@ export class GitHubHandler {
 					}
 				});
 			});
-		issue_data.is_blocked_by = Array.from(new Set(is_blocked_by))
-		issue_data.blocks = Array.from(new Set(blocks))
-		issue_data.relates_to = Array.from(new Set(relates_to))
+		issue_data.is_blocked_by = Array.from(new Set(is_blocked_by));
+		issue_data.blocks = Array.from(new Set(blocks));
+		issue_data.relates_to = Array.from(new Set(relates_to));
 		return issue_data;
 	}
 }

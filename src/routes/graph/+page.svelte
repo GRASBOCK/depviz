@@ -26,7 +26,7 @@
 			.filter((issue) => issue.data === undefined)
 			.map(async (issue) => {
 				const issue_data = await client.fetch_issuedata(issue.url);
-				issue.data = issue_data
+				issue.data = issue_data;
 				issues.set(issue.url, issue);
 				if (issue_data instanceof IssueData) {
 					function add_if_new(b_url: string) {
@@ -38,7 +38,6 @@
 					issue_data.relates_to.forEach(add_if_new);
 					issue_data.blocks.forEach(add_if_new);
 				}
-				
 			});
 		loading = Promise.allSettled(promises).then(async () => {
 			graph = construct_graph(Array.from(issues.values()));
