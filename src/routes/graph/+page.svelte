@@ -67,11 +67,13 @@
 			if (gitlab_access_token) {
 				handler_promises.push(new_gitlab_handler(gitlab_access_token));
 			}
-			loading = Promise.all(handler_promises.map(async (handler_promise) => {
-				const handler = await handler_promise;
-				client.handlers.push(handler);
-			})).then(() => {
-				console.log("handlers registered:", client.handlers.length)
+			loading = Promise.all(
+				handler_promises.map(async (handler_promise) => {
+					const handler = await handler_promise;
+					client.handlers.push(handler);
+				})
+			).then(() => {
+				console.log('handlers registered:', client.handlers.length);
 				urls.forEach((url) => {
 					issues.set(url, new Issue(url));
 				});
