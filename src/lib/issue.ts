@@ -19,11 +19,9 @@ export class NoHandler {}
 export interface Issue {
 	url(): string;
 	data(): IssueData;
-	graph_label(): string
-	table_label(): string
-	is_blocked_by(): string[]
-	relates_to(): string[]
-	blocks(): string[]
+	graph_label(): string;
+	table_label(): string;
+	is_blocked_by(): string[];
+	relates_to(): string[];
+	blocks(): string[];
 }
-
-

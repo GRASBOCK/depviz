@@ -17,7 +17,7 @@
 	let octokit: Octokit;
 	const client = new Client();
 
-	let issues: Map<string, Issue|null|Error> = new Map<string, Issue>();
+	let issues: Map<string, Issue | null | Error> = new Map<string, Issue>();
 
 	let loading: Promise<any> = Promise.resolve();
 	let loading_text = '';
@@ -27,7 +27,7 @@
 		const promises = Array.from(issues.entries())
 			.filter((pair) => pair[1] === null)
 			.map(async (pair) => {
-				const url = pair[0]
+				const url = pair[0];
 				try {
 					const new_issue = await client.fetch_issue(url);
 					issues.set(url, new_issue);
@@ -39,11 +39,11 @@
 					new_issue.is_blocked_by().forEach(add_if_new);
 					new_issue.relates_to().forEach(add_if_new);
 					new_issue.blocks().forEach(add_if_new);
-				}catch(error){
-					if(error instanceof Error){
+				} catch (error) {
+					if (error instanceof Error) {
 						issues.set(url, error);
 					}
-					console.error(error)
+					console.error(error);
 				}
 			});
 		loading = Promise.allSettled(promises).then(async () => {

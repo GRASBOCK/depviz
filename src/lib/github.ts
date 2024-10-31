@@ -63,14 +63,14 @@ export class GitHubIssue {
 	}
 
 	url() {
-		return this._url
+		return this._url;
 	}
 
 	data() {
-		return this._data
+		return this._data;
 	}
 
-	table_label(): string{
+	table_label(): string {
 		const url = new URL(this._url);
 		const components = url.pathname.split('/');
 		const owner = components[1];
@@ -90,17 +90,16 @@ export class GitHubIssue {
 		return `${owner}\n${repo}\n#${number}` + indicator;
 	}
 
-	is_blocked_by(): string[]{
-		return this._data.is_blocked_by
+	is_blocked_by(): string[] {
+		return this._data.is_blocked_by;
 	}
-	relates_to(): string[]{
-		return this._data.relates_to
+	relates_to(): string[] {
+		return this._data.relates_to;
 	}
-	blocks(): string[]{
-		return this._data.blocks
+	blocks(): string[] {
+		return this._data.blocks;
 	}
 }
-
 
 export class GitHubHandler {
 	octokit: Octokit;

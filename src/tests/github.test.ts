@@ -15,9 +15,7 @@ describe('fetch issuedata', async () => {
 	} = await octokit.rest.users.getAuthenticated();
 	const client = new GitHubHandler(octokit);
 
-	const issuedata = await client.fetch_issue(
-		'https://github.com/octocat/Hello-World/issues/3094'
-	);
+	const issuedata = await client.fetch_issue('https://github.com/octocat/Hello-World/issues/3094');
 	it('issuedata exists', () => {
 		expect(issuedata);
 	});

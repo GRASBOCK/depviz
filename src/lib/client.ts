@@ -20,6 +20,6 @@ export class Client {
 				console.error('error:', error, '; url:', url);
 			}
 		}
-		throw Error("no handler could successfully fetch issue");
+		throw Error('no handler could successfully fetch issue');
 	}
 }

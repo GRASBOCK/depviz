@@ -79,21 +79,27 @@ export class Graph {
 	}
 }
 
-export function construct_graph(issues: Map<string, Issue|null|Error>): Graph {
-	function node_from_issue(issue: Issue){
-		return new Node(issue.url(), issue.graph_label(), issue.table_label(), "")
+export function construct_graph(issues: Map<string, Issue | null | Error>): Graph {
+	function node_from_issue(issue: Issue) {
+		return new Node(issue.url(), issue.graph_label(), issue.table_label(), '');
 	}
-	function node_from_null(url: string){
-		return new Node(url, url, url, "❓")
+	function node_from_null(url: string) {
+		return new Node(url, url, url, '❓');
 	}
-	function node_from_error(url: string){
-		return new Node(url, url, url, "❌")
+	function node_from_error(url: string) {
+		return new Node(url, url, url, '❌');
 	}
-	const nodes = Array.from(issues, (pair) => pair[1] === null ? node_from_null(pair[0]) : pair[1] instanceof Error ? node_from_error(pair[0]) : node_from_issue(pair[1]) );
+	const nodes = Array.from(issues, (pair) =>
+		pair[1] === null
+			? node_from_null(pair[0])
+			: pair[1] instanceof Error
+				? node_from_error(pair[0])
+				: node_from_issue(pair[1])
+	);
 	const edges: Edge[] = [];
 	let i = 0;
 	issues.forEach((issue, url) => {
-		if (issue !== null && !(issue instanceof Error) ) {
+		if (issue !== null && !(issue instanceof Error)) {
 			const issue_data = issue.data();
 			issue_data.is_blocked_by.forEach((b_url) => {
 				const b_index = nodes.findIndex((n) => b_url == n.url);
@@ -151,7 +157,7 @@ export function construct_graph(issues: Map<string, Issue|null|Error>): Graph {
 				}
 			});
 		}
-		i += 1
+		i += 1;
 	});
 	return new Graph(nodes, edges);
 }

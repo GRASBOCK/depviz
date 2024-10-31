@@ -14,14 +14,14 @@ export class GitLabIssue {
 	}
 
 	url() {
-		return this._url
+		return this._url;
 	}
 
 	data() {
-		return this._data
+		return this._data;
 	}
 
-	table_label(): string{
+	table_label(): string {
 		const url = new URL(this._url);
 		const components = url.pathname.split('/');
 		const owner = components[1];
@@ -40,14 +40,14 @@ export class GitLabIssue {
 		const indicator = this._data !== null ? (this._data instanceof NoHandler ? '⚠️' : '') : '❓';
 		return `${owner}\n${repo}\n#${number}` + indicator;
 	}
-	is_blocked_by(): string[]{
-		return this._data.is_blocked_by
+	is_blocked_by(): string[] {
+		return this._data.is_blocked_by;
 	}
-	relates_to(): string[]{
-		return this._data.relates_to
+	relates_to(): string[] {
+		return this._data.relates_to;
 	}
-	blocks(): string[]{
-		return this._data.blocks
+	blocks(): string[] {
+		return this._data.blocks;
 	}
 }
 
@@ -116,40 +116,43 @@ export class GitLabHandler {
 		const owner = path[1];
 		const repo = path[2];
 		const issue_number = Number(path[4]);
-		const data = await fetch("https://gitlab.com/api/v4/projects/gitlab-org%2Fgitlab-runner/issues/36951")
-			.then(res=>{
-				if(res.ok){
-					return res.json()
-				}else{
-					console.error("failed to fetch issue: status", res.status, res.statusText)
-					throw IssueFetchError.FETCH_FAILED
-				}
-			})
-		const project_id = data.project_id
-		const issue_iid = data.iid
-		const links: {web_url: string, link_type: string}[] = await fetch(`https://gitlab.com/api/v4/projects/${project_id}/issues/${issue_iid}/links`, {headers:{"Authorization": `Bearer ${this.access_token}`}})
-			.then(res=>{
-				if(res.ok){
-					return res.json()
-				}else{
-					console.error("failed to fetch issue links: status", res.status, res.statusText, res.url)
-					throw IssueFetchError.FETCH_FAILED
-				}
-			})
-		
+		const data = await fetch(
+			'https://gitlab.com/api/v4/projects/gitlab-org%2Fgitlab-runner/issues/36951'
+		).then((res) => {
+			if (res.ok) {
+				return res.json();
+			} else {
+				console.error('failed to fetch issue: status', res.status, res.statusText);
+				throw IssueFetchError.FETCH_FAILED;
+			}
+		});
+		const project_id = data.project_id;
+		const issue_iid = data.iid;
+		const links: { web_url: string; link_type: string }[] = await fetch(
+			`https://gitlab.com/api/v4/projects/${project_id}/issues/${issue_iid}/links`,
+			{ headers: { Authorization: `Bearer ${this.access_token}` } }
+		).then((res) => {
+			if (res.ok) {
+				return res.json();
+			} else {
+				console.error('failed to fetch issue links: status', res.status, res.statusText, res.url);
+				throw IssueFetchError.FETCH_FAILED;
+			}
+		});
+
 		const is_blocked_by: string[] = [];
 		const blocks: string[] = [];
 		const relates_to: string[] = [];
-		links.forEach(link => {
-			switch(link.link_type){
-				case "relates_to":
-					relates_to.push(link.web_url)
+		links.forEach((link) => {
+			switch (link.link_type) {
+				case 'relates_to':
+					relates_to.push(link.web_url);
 					break;
-				case "blocks":
-					blocks.push(link.web_url)
+				case 'blocks':
+					blocks.push(link.web_url);
 					break;
-				case "is_blocked_by":
-					is_blocked_by.push(link.web_url)
+				case 'is_blocked_by':
+					is_blocked_by.push(link.web_url);
 					break;
 			}
 		});
