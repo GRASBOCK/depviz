@@ -2,8 +2,6 @@
 	import { onMount } from 'svelte';
 	import { base } from '$app/paths';
 
-	let url = `https://github.com/octocat/Hello-World/issues/3094`;
-
 	let access_token: string | null = null;
 	let authenticate = false;
 	function store_access_token(access_token: string) {
