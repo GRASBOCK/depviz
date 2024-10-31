@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Octokit } from 'octokit';
-	import { GitHubHandler } from '$lib/github';
+	import { GitHubHandler, new_github_handler } from '$lib/github';
 	import Spinner from '$lib/Spinner.svelte';
 	import DepViz from '$lib/DepViz.svelte';
 	import { onMount } from 'svelte';
@@ -8,8 +8,10 @@
 	import { base } from '$app/paths';
 	import { Client } from '$lib/client';
 	import { Issue, IssueData } from '$lib/issue';
+	import { new_gitlab_handler } from '$lib/gitlab';
 
-	let access_token: string | null = null;
+	let github_access_token: string | null = null;
+	let gitlab_access_token: string | null = null;
 	let graph: Graph;
 
 	let octokit: Octokit;
@@ -49,32 +51,37 @@
 			new Promise((resolve) => setTimeout(resolve, 10000)).then(update);
 		}
 	}
-	onMount(() => {
-		access_token = localStorage.getItem('access_token');
-		console.log('access_token: ', access_token);
-		if (access_token) {
-			const queryString = window.location.search;
-			const urlParams = new URLSearchParams(queryString);
-			const urls = urlParams.getAll('url');
-			if (urls.length > 0) {
-				octokit = new Octokit({ auth: access_token });
-				client.handlers.push(new GitHubHandler(octokit));
-				loading_text = 'authenticating the client';
-				loading = octokit.rest.users.getAuthenticated().then(async () => {
-					loading_text = 'fetching root issue';
-					urls.forEach((url) => {
-						issues.set(url, new Issue(url));
-					});
-					graph = construct_graph(Array.from(issues.values()));
-					new Promise((resolve) => setTimeout(resolve, 1)).then(update);
-				});
-			} else {
-				loading = new Promise(() => {
-					throw Error('url parameter mkissing');
-				});
+	onMount(async () => {
+		github_access_token = localStorage.getItem('github_access_token');
+		gitlab_access_token = localStorage.getItem('gitlab_access_token');
+		console.log('github_access_token: ', github_access_token);
+		const queryString = window.location.search;
+		const urlParams = new URLSearchParams(queryString);
+		const urls = urlParams.getAll('url');
+		if (urls.length > 0) {
+			loading_text = 'loading handlers';
+			const handler_promises = [];
+			if (github_access_token) {
+				handler_promises.push(new_github_handler(github_access_token));
 			}
+			if (gitlab_access_token) {
+				handler_promises.push(new_gitlab_handler(gitlab_access_token));
+			}
+			loading = Promise.all(handler_promises.map(async (handler_promise) => {
+				const handler = await handler_promise;
+				client.handlers.push(handler);
+			})).then(() => {
+				console.log("handlers registered:", client.handlers.length)
+				urls.forEach((url) => {
+					issues.set(url, new Issue(url));
+				});
+				graph = construct_graph(Array.from(issues.values()));
+				new Promise((resolve) => setTimeout(resolve, 1)).then(update);
+			});
 		} else {
-			window.location.assign(`${base}/github/`);
+			loading = new Promise(() => {
+				throw Error('url parameter missing');
+			});
 		}
 	});
 </script>

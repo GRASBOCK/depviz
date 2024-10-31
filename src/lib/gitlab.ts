@@ -133,7 +133,7 @@ export class GitHubHandler {
 	}
 }
 
-export async function new_github_handler(access_token: string): Promise<GitHubHandler> {
+export async function new_gitlab_handler(access_token: string): Promise<GitHubHandler> {
 	const octokit = new Octokit({ auth: access_token });
 	await octokit.rest.users.getAuthenticated();
 	return new GitHubHandler(octokit);
