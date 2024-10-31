@@ -1,5 +1,5 @@
 import { Octokit } from 'octokit';
-import { Issue, IssueData } from '$lib/issue';
+import { IssueData, NoHandler } from '$lib/issue';
 import { IssueFetchError } from './client';
 
 export const GITHUB_HOSTNAME: string = 'github';
@@ -53,12 +53,61 @@ function url_from_path(owner: string, repo: string, number: number) {
 	return `https://github.com/${owner}/${repo}/issues/${number}`;
 }
 
+export class GitHubIssue {
+	_url: string;
+	_data: IssueData; // issue data = successful, null = broken link, undefined = not fetched yet
+
+	constructor(url: string, data: IssueData) {
+		this._url = url;
+		this._data = data;
+	}
+
+	url() {
+		return this._url
+	}
+
+	data() {
+		return this._data
+	}
+
+	table_label(): string{
+		const url = new URL(this._url);
+		const components = url.pathname.split('/');
+		const owner = components[1];
+		const repo = components[2];
+		const number = components[4];
+		const indicator = this._data !== null ? (this._data instanceof NoHandler ? '⚠️' : '') : '❓';
+		return `${owner} ${repo} #${number}` + indicator;
+	}
+
+	graph_label() {
+		const url = new URL(this._url);
+		const components = url.pathname.split('/');
+		const owner = components[1];
+		const repo = components[2];
+		const number = components[4];
+		const indicator = this._data !== null ? (this._data instanceof NoHandler ? '⚠️' : '') : '❓';
+		return `${owner}\n${repo}\n#${number}` + indicator;
+	}
+
+	is_blocked_by(): string[]{
+		return this._data.is_blocked_by
+	}
+	relates_to(): string[]{
+		return this._data.relates_to
+	}
+	blocks(): string[]{
+		return this._data.blocks
+	}
+}
+
+
 export class GitHubHandler {
 	octokit: Octokit;
 	constructor(octokit: Octokit) {
 		this.octokit = octokit;
 	}
-	async fetch_issuedata(url: string): Promise<IssueData> {
+	async fetch_issue(url: string): Promise<GitHubIssue> {
 		if (!url.includes('github')) {
 			throw IssueFetchError.CANT_HANDLE;
 		}
@@ -129,7 +178,7 @@ export class GitHubHandler {
 		issue_data.is_blocked_by = Array.from(new Set(is_blocked_by));
 		issue_data.blocks = Array.from(new Set(blocks));
 		issue_data.relates_to = Array.from(new Set(relates_to));
-		return issue_data;
+		return new GitHubIssue(url, issue_data);
 	}
 }
 

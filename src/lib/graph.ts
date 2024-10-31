@@ -1,22 +1,24 @@
-import { Issue, IssueData } from '$lib/issue';
+import { type Issue, IssueData } from '$lib/issue';
 
 export class Node {
-	issue: Issue; // issue data = successful, null = broken link, undefined = not fetched yet
+	url: string; // issue data = successful, null = broken link, undefined = not fetched yet
+	graph_label: string;
+	table_label: string;
+	status: string;
 
-	constructor(issue: Issue) {
-		this.issue = issue;
-	}
-
-	url() {
-		return this.issue.url;
+	constructor(url: string, graph_label: string, table_label: string, status: string) {
+		this.url = url;
+		this.table_label = table_label;
+		this.graph_label = graph_label;
+		this.status = status;
 	}
 
 	static compare(a: Node, b: Node) {
-		return a.issue.url.localeCompare(b.issue.url);
+		return a.url.localeCompare(b.url);
 	}
 
 	static same(x: Node, y: Node) {
-		return x.issue.url == y.issue.url;
+		return x.url == y.url;
 	}
 }
 
@@ -77,15 +79,24 @@ export class Graph {
 	}
 }
 
-export function construct_graph(issues: Issue[]): Graph {
-	const nodes = Array.from(issues, (issue) => new Node(issue));
+export function construct_graph(issues: Map<string, Issue|null|Error>): Graph {
+	function node_from_issue(issue: Issue){
+		return new Node(issue.url(), issue.graph_label(), issue.table_label(), "")
+	}
+	function node_from_null(url: string){
+		return new Node(url, url, url, "❓")
+	}
+	function node_from_error(url: string){
+		return new Node(url, url, url, "❌")
+	}
+	const nodes = Array.from(issues, (pair) => pair[1] === null ? node_from_null(pair[0]) : pair[1] instanceof Error ? node_from_error(pair[0]) : node_from_issue(pair[1]) );
 	const edges: Edge[] = [];
-	for (let i = 0; i < issues.length; i++) {
-		const issue = issues[i];
-		const issue_data = issue.data;
-		if (issue_data instanceof IssueData) {
+	let i = 0;
+	issues.forEach((issue, url) => {
+		if (issue !== null && !(issue instanceof Error) ) {
+			const issue_data = issue.data();
 			issue_data.is_blocked_by.forEach((b_url) => {
-				const b_index = issues.findIndex((n) => b_url == n.url);
+				const b_index = nodes.findIndex((n) => b_url == n.url);
 				if (b_index < 0) {
 					console.error(`is_blocked_by url not found in nodes; url: ${b_url}`);
 				} else {
@@ -106,7 +117,7 @@ export function construct_graph(issues: Issue[]): Graph {
 				}
 			});
 			issue_data.blocks.forEach((b_url) => {
-				const b_index = issues.findIndex((n) => b_url == n.url);
+				const b_index = nodes.findIndex((n) => b_url == n.url);
 				if (b_index < 0) {
 					console.error(`is_blocked_by url not found in nodes; url: ${b_url}`);
 				} else {
@@ -127,7 +138,7 @@ export function construct_graph(issues: Issue[]): Graph {
 				}
 			});
 			issue_data.relates_to.forEach((b_url) => {
-				const b_index = issues.findIndex((n) => b_url == n.url);
+				const b_index = nodes.findIndex((n) => b_url == n.url);
 				if (b_index < 0) {
 					console.error(`relates_to url not found in nodes; url: ${b_url}`);
 				} else {
@@ -140,6 +151,7 @@ export function construct_graph(issues: Issue[]): Graph {
 				}
 			});
 		}
-	}
+		i += 1
+	});
 	return new Graph(nodes, edges);
 }

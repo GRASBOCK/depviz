@@ -24,15 +24,15 @@
 	});
 
 	export let on_select = function (node: Node) {
-		window.open(node.issue.url, '_blank');
-		console.log('Selection: ' + node.issue.url);
+		window.open(node.url, '_blank');
+		console.log('Selection: ' + node.url);
 	};
 
 	function draw(graph: Graph) {
 		// create an array with nodes
 		var nodes = new DataSet(
 			graph.nodes.map((n, ni) => {
-				return { id: ni, label: n.issue.label() };
+				return { id: ni, label: n.graph_label };
 			})
 		);
 

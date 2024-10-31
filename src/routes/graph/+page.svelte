@@ -7,7 +7,7 @@
 	import { construct_graph, Graph } from '$lib/graph';
 	import { base } from '$app/paths';
 	import { Client } from '$lib/client';
-	import { Issue, IssueData } from '$lib/issue';
+	import { type Issue, IssueData } from '$lib/issue';
 	import { new_gitlab_handler } from '$lib/gitlab';
 
 	let github_access_token: string | null = null;
@@ -17,35 +17,40 @@
 	let octokit: Octokit;
 	const client = new Client();
 
-	let issues: Map<string, Issue> = new Map<string, Issue>();
+	let issues: Map<string, Issue|null|Error> = new Map<string, Issue>();
 
 	let loading: Promise<any> = Promise.resolve();
 	let loading_text = '';
 
 	async function update() {
 		loading_text = 'updating issue graph';
-		const promises = Array.from(issues.values())
-			.filter((issue) => issue.data === undefined)
-			.map(async (issue) => {
-				const issue_data = await client.fetch_issuedata(issue.url);
-				issue.data = issue_data;
-				issues.set(issue.url, issue);
-				if (issue_data instanceof IssueData) {
+		const promises = Array.from(issues.entries())
+			.filter((pair) => pair[1] === null)
+			.map(async (pair) => {
+				const url = pair[0]
+				try {
+					const new_issue = await client.fetch_issue(url);
+					issues.set(url, new_issue);
 					function add_if_new(b_url: string) {
 						if (!issues.has(b_url)) {
-							issues.set(b_url, new Issue(b_url));
+							issues.set(b_url, null);
 						}
 					}
-					issue_data.is_blocked_by.forEach(add_if_new);
-					issue_data.relates_to.forEach(add_if_new);
-					issue_data.blocks.forEach(add_if_new);
+					new_issue.is_blocked_by().forEach(add_if_new);
+					new_issue.relates_to().forEach(add_if_new);
+					new_issue.blocks().forEach(add_if_new);
+				}catch(error){
+					if(error instanceof Error){
+						issues.set(url, error);
+					}
+					console.error(error)
 				}
 			});
 		loading = Promise.allSettled(promises).then(async () => {
-			graph = construct_graph(Array.from(issues.values()));
+			graph = construct_graph(issues);
 		});
 		await loading;
-		if (Array.from(issues.values()).filter((issue) => issue.data === undefined).length > 0) {
+		if (Array.from(issues.values()).filter((issue) => issue === null).length > 0) {
 			new Promise((resolve) => setTimeout(resolve, 1)).then(update);
 		} else {
 			new Promise((resolve) => setTimeout(resolve, 10000)).then(update);
@@ -75,9 +80,9 @@
 			).then(() => {
 				console.log('handlers registered:', client.handlers.length);
 				urls.forEach((url) => {
-					issues.set(url, new Issue(url));
+					issues.set(url, null);
 				});
-				graph = construct_graph(Array.from(issues.values()));
+				graph = construct_graph(issues);
 				new Promise((resolve) => setTimeout(resolve, 1)).then(update);
 			});
 		} else {

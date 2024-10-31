@@ -1,4 +1,4 @@
-import { Issue, IssueData, NoHandler } from './issue';
+import { type Issue, IssueData, NoHandler } from './issue';
 
 export enum IssueFetchError {
 	CANT_HANDLE = 'Cannot handle the url of this issue. Broken URL or use different handler',
@@ -6,25 +6,20 @@ export enum IssueFetchError {
 }
 
 export interface Handler {
-	fetch_issuedata(url: string): Promise<IssueData>;
+	fetch_issue(url: string): Promise<Issue>;
 }
 
 export class Client {
 	handlers: Handler[] = [];
 
-	async fetch_issuedata(url: string): Promise<IssueData | NoHandler | null> {
+	async fetch_issue(url: string): Promise<Issue> {
 		for (let i = 0; i < this.handlers.length; i++) {
 			try {
-				return await this.handlers[i].fetch_issuedata(url);
+				return await this.handlers[i].fetch_issue(url);
 			} catch (error) {
-				if (typeof error === 'string') {
-					console.error('error:', error, '; url:', url);
-					if (error === IssueFetchError.FETCH_FAILED) {
-						return null;
-					}
-				}
+				console.error('error:', error, '; url:', url);
 			}
 		}
-		return new NoHandler();
+		throw Error("no handler could successfully fetch issue");
 	}
 }

@@ -16,22 +16,14 @@ export class IssueData {
 
 export class NoHandler {}
 
-export class Issue {
-	url: string;
-	data: IssueData | NoHandler | null | undefined; // issue data = successful, null = broken link, undefined = not fetched yet
-
-	constructor(url: string, data: IssueData | NoHandler | null | undefined = undefined) {
-		this.url = url;
-		this.data = data;
-	}
-
-	label() {
-		const url = new URL(this.url);
-		const components = url.pathname.split('/');
-		const owner = components[1];
-		const repo = components[2];
-		const number = components[4];
-		const indicator = this.data !== null ? (this.data instanceof NoHandler ? '⚠️' : '') : '❓';
-		return `${owner}\n${repo}\n#${number}` + indicator;
-	}
+export interface Issue {
+	url(): string;
+	data(): IssueData;
+	graph_label(): string
+	table_label(): string
+	is_blocked_by(): string[]
+	relates_to(): string[]
+	blocks(): string[]
 }
+
+
