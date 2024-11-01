@@ -13,6 +13,25 @@ export class GitLabIssue {
 		this._data = data;
 	}
 
+	variables(): { project_path: string; issue_number: string } {
+		const matches = /gitlab\.com\/(?<project_path>.*)\/-\/issues\/(?<issue_number>\d*)/.exec(
+			this._url
+		);
+		if (matches === null) {
+			console.error('does not matches');
+			throw IssueFetchError.CANT_HANDLE;
+		}
+		const groups = matches.groups;
+		if (groups === undefined) {
+			console.error('does not have groups');
+			throw IssueFetchError.CANT_HANDLE;
+		}
+
+		const project_path = groups.project_path;
+		const issue_number = groups.issue_number;
+		return { project_path, issue_number };
+	}
+
 	url() {
 		return this._url;
 	}
@@ -22,23 +41,13 @@ export class GitLabIssue {
 	}
 
 	table_label(): string {
-		const url = new URL(this._url);
-		const components = url.pathname.split('/');
-		const owner = components[1];
-		const repo = components[2];
-		const number = components[4];
-		const indicator = this._data !== null ? (this._data instanceof NoHandler ? '⚠️' : '') : '❓';
-		return `${owner} ${repo} #${number}` + indicator;
+		const vars = this.variables();
+		return vars.project_path.replaceAll('/', ' ') + ' #' + vars.issue_number;
 	}
 
 	graph_label() {
-		const url = new URL(this._url);
-		const components = url.pathname.split('/');
-		const owner = components[1];
-		const repo = components[2];
-		const number = components[4];
-		const indicator = this._data !== null ? (this._data instanceof NoHandler ? '⚠️' : '') : '❓';
-		return `${owner}\n${repo}\n#${number}` + indicator;
+		const vars = this.variables();
+		return vars.project_path.replaceAll('/', '\n') + '\n#' + vars.issue_number;
 	}
 	is_blocked_by(): string[] {
 		return this._data.is_blocked_by;
@@ -109,15 +118,26 @@ export class GitLabHandler {
 		if (!url.includes('gitlab')) {
 			throw IssueFetchError.CANT_HANDLE;
 		}
-		const path = new URL(url).pathname.split('/');
-		if (path.length < 4) {
+
+		const matches = /gitlab\.com\/(?<project_path>.*)\/-\/issues\/(?<issue_number>\d*)/.exec(url);
+		if (matches === null) {
+			console.error('does not matches');
 			throw IssueFetchError.CANT_HANDLE;
 		}
-		const owner = path[1];
-		const repo = path[2];
-		const issue_number = Number(path[4]);
+		const groups = matches.groups;
+		if (groups === undefined) {
+			console.error('does not have groups');
+			throw IssueFetchError.CANT_HANDLE;
+		}
+
+		const project_path = groups.project_path.replaceAll('/', '%2F');
+		const issue_number = groups.issue_number;
+		console.log('project_path', project_path);
+		const init = { headers: { Authorization: `Bearer ${this.access_token}` } };
+
 		const data = await fetch(
-			'https://gitlab.com/api/v4/projects/gitlab-org%2Fgitlab-runner/issues/36951'
+			`https://gitlab.com/api/v4/projects/${project_path}/issues/${issue_number}`,
+			init
 		).then((res) => {
 			if (res.ok) {
 				return res.json();
@@ -130,7 +150,7 @@ export class GitLabHandler {
 		const issue_iid = data.iid;
 		const links: { web_url: string; link_type: string }[] = await fetch(
 			`https://gitlab.com/api/v4/projects/${project_id}/issues/${issue_iid}/links`,
-			{ headers: { Authorization: `Bearer ${this.access_token}` } }
+			init
 		).then((res) => {
 			if (res.ok) {
 				return res.json();
