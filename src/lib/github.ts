@@ -1,5 +1,5 @@
 import { Octokit } from 'octokit';
-import { IssueData, NoHandler } from '$lib/issue';
+import { IssueData } from '$lib/issue';
 import { IssueFetchError } from './client';
 
 export const GITHUB_HOSTNAME: string = 'github';

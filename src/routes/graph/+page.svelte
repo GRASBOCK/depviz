@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { Octokit } from 'octokit';
 	import { new_github_handler } from '$lib/github';
 	import Spinner from '$lib/Spinner.svelte';
 	import DepViz from '$lib/DepViz.svelte';

@@ -14,8 +14,6 @@ export class IssueData {
 	}
 }
 
-export class NoHandler {}
-
 export interface Issue {
 	url(): string;
 	data(): IssueData;

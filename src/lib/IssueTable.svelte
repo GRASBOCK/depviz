@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { Graph } from './graph';
-	import { NoHandler } from './issue';
 
 	export let graph: Graph;
 

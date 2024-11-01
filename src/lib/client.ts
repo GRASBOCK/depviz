@@ -1,4 +1,4 @@
-import { type Issue, IssueData, NoHandler } from './issue';
+import { type Issue } from './issue';
 
 export enum IssueFetchError {
 	CANT_HANDLE = 'Cannot handle the url of this issue. Broken URL or use different handler',

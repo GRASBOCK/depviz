@@ -62,7 +62,6 @@
 					}
 					break;
 			}
-			e.type != EdgeType.RelatesTo;
 			edges.push({
 				id: i,
 				from: e.b,

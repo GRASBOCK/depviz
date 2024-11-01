@@ -98,7 +98,7 @@ export function construct_graph(issues: Map<string, Issue | null | Error>): Grap
 	);
 	const edges: Edge[] = [];
 	let i = 0;
-	issues.forEach((issue, _) => {
+	issues.forEach((issue) => {
 		if (issue !== null && !(issue instanceof Error)) {
 			const issue_data = issue.data();
 			issue_data.is_blocked_by.forEach((b_url) => {
