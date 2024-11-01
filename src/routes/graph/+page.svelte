@@ -1,20 +1,18 @@
 <script lang="ts">
 	import { Octokit } from 'octokit';
-	import { GitHubHandler, new_github_handler } from '$lib/github';
+	import { new_github_handler } from '$lib/github';
 	import Spinner from '$lib/Spinner.svelte';
 	import DepViz from '$lib/DepViz.svelte';
 	import { onMount } from 'svelte';
 	import { construct_graph, Graph } from '$lib/graph';
-	import { base } from '$app/paths';
 	import { Client } from '$lib/client';
-	import { type Issue, IssueData } from '$lib/issue';
+	import { type Issue } from '$lib/issue';
 	import { new_gitlab_handler } from '$lib/gitlab';
 
 	let github_access_token: string | null = null;
 	let gitlab_access_token: string | null = null;
 	let graph: Graph;
 
-	let octokit: Octokit;
 	const client = new Client();
 
 	let issues: Map<string, Issue | null | Error> = new Map<string, Issue>();

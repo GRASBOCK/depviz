@@ -4,7 +4,6 @@
 
 	let github_access_token: string;
 	let gitlab_access_token: string;
-	let authenticate = false;
 	onMount(() => {
 		function access_token(key: string): string {
 			const token = localStorage.getItem(key);

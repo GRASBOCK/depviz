@@ -10,11 +10,11 @@
 <p>Issues:</p>
 {#each graph.nodes as node, i}
 	<li>
-		<a href={node.url}>{node.table_label}</a>{node.status}
+		<a href={node.url}>{node.table_label}</a> {node.status}
 		{#if related[i].length > 0}->{/if}
 		{#each related[i] as { node, dependency }}
 			<a href={node.url}
-				>{node.table_label}{#if dependency}⤵️{:else}🔗{/if}</a
+				>{node.table_label} {#if dependency}⤵️{:else}🔗{/if}</a
 			>&nbsp
 		{/each}
 	</li>

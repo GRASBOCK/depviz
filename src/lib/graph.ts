@@ -1,4 +1,4 @@
-import { type Issue, IssueData } from '$lib/issue';
+import { type Issue } from '$lib/issue';
 
 export class Node {
 	url: string; // issue data = successful, null = broken link, undefined = not fetched yet
@@ -98,7 +98,7 @@ export function construct_graph(issues: Map<string, Issue | null | Error>): Grap
 	);
 	const edges: Edge[] = [];
 	let i = 0;
-	issues.forEach((issue, url) => {
+	issues.forEach((issue, _) => {
 		if (issue !== null && !(issue instanceof Error)) {
 			const issue_data = issue.data();
 			issue_data.is_blocked_by.forEach((b_url) => {

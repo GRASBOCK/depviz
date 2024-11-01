@@ -76,8 +76,7 @@ export class GitHubIssue {
 		const owner = components[1];
 		const repo = components[2];
 		const number = components[4];
-		const indicator = this._data !== null ? (this._data instanceof NoHandler ? '⚠️' : '') : '❓';
-		return `${owner} ${repo} #${number}` + indicator;
+		return `${owner} ${repo} #${number}`;
 	}
 
 	graph_label() {
@@ -86,8 +85,7 @@ export class GitHubIssue {
 		const owner = components[1];
 		const repo = components[2];
 		const number = components[4];
-		const indicator = this._data !== null ? (this._data instanceof NoHandler ? '⚠️' : '') : '❓';
-		return `${owner}\n${repo}\n#${number}` + indicator;
+		return `${owner}\n${repo}\n#${number}`;
 	}
 
 	is_blocked_by(): string[] {
