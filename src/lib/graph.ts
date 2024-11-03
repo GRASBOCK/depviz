@@ -124,15 +124,15 @@ export function construct_graph(tasks: Map<string, Task>): Graph {
 			task.blocks().forEach((b_url) => {
 				const b_index = nodes.findIndex((n) => b_url == n.url);
 				if (b_index < 0) {
-					console.error(`is_blocked_by url not found in nodes; url: ${b_url}`);
+					console.error(`blocks url not found in nodes; url: ${b_url}`);
 				} else {
 					const circular_dependency_edge_index = edges.findIndex(
-						(e) => e.a === i && e.b === b_index
+						(e) => e.a === b_index && e.b === i
 					);
 					if (circular_dependency_edge_index < 0) {
 						const existing_edge_index = edges.findIndex((e) => e.a === b_index && e.b === i);
 						if (existing_edge_index < 0) {
-							edges.push(new Edge(b_index, i, EdgeType.DependsOn));
+							edges.push(new Edge(i, b_index, EdgeType.DependsOn));
 						} else {
 							// override relates to with depends on
 							edges[existing_edge_index] = new Edge(b_index, i, EdgeType.DependsOn);
