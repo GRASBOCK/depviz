@@ -99,7 +99,9 @@
 			},
 			layout: {
 				hierarchical: {
-					direction: directionInput
+					direction: directionInput,
+					sortMethod: 'directed',
+					shakeTowards: 'roots'
 				}
 			}
 		};

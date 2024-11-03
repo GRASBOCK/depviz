@@ -1,61 +1,122 @@
-import { IssueData } from '$lib/issue';
-import { IssueFetchError } from './client';
+import { Status } from './task';
 
 export const GITHUB_HOSTNAME: string = 'github';
 
-export class GitLabIssue {
-	_url: string;
-	_data: IssueData; // issue data = successful, null = broken link, undefined = not fetched yet
-
-	constructor(url: string, data: IssueData) {
-		this._url = url;
-		this._data = data;
+export function is_gitlab(url: string): boolean {
+	if (url.includes('gitlab')) {
+		return true;
+	} else {
+		return false;
 	}
+}
 
-	variables(): { project_path: string; issue_number: string } {
-		const matches = /gitlab\.com\/(?<project_path>.*)\/-\/issues\/(?<issue_number>\d*)/.exec(
-			this._url
+export class GitLabIssue {
+	_url: URL;
+	_fetched: Status = Status.TO_BE_FETCHED;
+	_status_text: string = 'unfetched';
+	_blocks: string[] = [];
+	_is_blocked_by: string[] = [];
+	_relates_to: string[] = [];
+	project_path: string;
+	issue_number: string;
+	access_token: string;
+
+	constructor(access_token: string, url: string) {
+		this._url = new URL(url);
+		this.access_token = access_token;
+
+		const matches = /\/(?<project_path>.*)\/-\/(issues|work_items)\/(?<issue_number>\d*)/.exec(
+			this._url.pathname
 		);
 		if (matches === null) {
-			console.error('does not matches');
-			throw IssueFetchError.CANT_HANDLE;
+			throw Error(`does not match ${this._url}`);
 		}
 		const groups = matches.groups;
 		if (groups === undefined) {
 			console.error('does not have groups');
-			throw IssueFetchError.CANT_HANDLE;
+			throw Error("Can't handle");
 		}
+		this.project_path = groups.project_path;
+		this.issue_number = groups.issue_number;
+	}
 
-		const project_path = groups.project_path;
-		const issue_number = groups.issue_number;
-		return { project_path, issue_number };
+	fetched(): Status {
+		return this._fetched;
 	}
 
 	url() {
-		return this._url;
-	}
-
-	data() {
-		return this._data;
+		return this._url.href;
 	}
 
 	table_label(): string {
-		const vars = this.variables();
-		return vars.project_path.replaceAll('/', ' ') + ' #' + vars.issue_number;
+		return this.project_path.replaceAll('/', ' ') + ' #' + this.issue_number;
 	}
 
 	graph_label() {
-		const vars = this.variables();
-		return vars.project_path.replaceAll('/', '\n') + '\n#' + vars.issue_number;
+		return this.project_path.replaceAll('/', '\n') + '\n#' + this.issue_number;
 	}
 	is_blocked_by(): string[] {
-		return this._data.is_blocked_by;
+		return this._is_blocked_by;
 	}
 	relates_to(): string[] {
-		return this._data.relates_to;
+		return this._relates_to;
 	}
 	blocks(): string[] {
-		return this._data.blocks;
+		return this._blocks;
+	}
+
+	async fetch(): Promise<void> {
+		const project_path = this.project_path.replaceAll('/', '%2F');
+		const issue_number = this.issue_number;
+		const init = { headers: { Authorization: `Bearer ${this.access_token}` } };
+
+		const data = await fetch(
+			`https://gitlab.com/api/v4/projects/${project_path}/issues/${issue_number}`,
+			init
+		).then((res) => {
+			if (res.ok) {
+				return res.json();
+			} else {
+				console.error('failed to fetch issue: status', res.status, res.statusText);
+				this._fetched = Status.FETCH_FAILED;
+				throw Error("Can't fetch");
+			}
+		});
+		const project_id = data.project_id;
+		const issue_iid = data.iid;
+		const links: { web_url: string; link_type: string }[] = await fetch(
+			`https://gitlab.com/api/v4/projects/${project_id}/issues/${issue_iid}/links`,
+			init
+		).then((res) => {
+			if (res.ok) {
+				return res.json();
+			} else {
+				console.error('failed to fetch issue links: status', res.status, res.statusText, res.url);
+				this._fetched = Status.FETCH_FAILED;
+				throw Error("Can't fetch");
+			}
+		});
+
+		const is_blocked_by: string[] = [];
+		const blocks: string[] = [];
+		const relates_to: string[] = [];
+		links.forEach((link) => {
+			switch (link.link_type) {
+				case 'relates_to':
+					relates_to.push(link.web_url);
+					break;
+				case 'blocks':
+					blocks.push(link.web_url);
+					break;
+				case 'is_blocked_by':
+					is_blocked_by.push(link.web_url);
+					break;
+			}
+		});
+		this._blocks = blocks;
+		this._is_blocked_by = is_blocked_by;
+		this._relates_to = relates_to;
+		this._fetched = Status.FETCHED;
 	}
 }
 
@@ -108,77 +169,86 @@ function url_from_path(owner: string, repo: string, number: number) {
 	return `https://github.com/${owner}/${repo}/issues/${number}`;
 }
 
-export class GitLabHandler {
-	access_token: string;
-	constructor(access_token: string) {
-		this.access_token = access_token;
+export async function new_gitlab_issue(access_token: string, url: string): Promise<GitLabIssue> {
+	return new GitLabIssue(access_token, url);
+}
+
+export async function fetch_multiple_issues(
+	access_token: string,
+	url: string
+): Promise<GitLabIssue[]> {
+	const _url = new URL(url);
+
+	let prefix = '';
+	let pathname_for_regex = _url.pathname;
+	if (_url.pathname.includes('groups')) {
+		prefix = 'groups/';
+		pathname_for_regex = pathname_for_regex.replace('/groups', '');
+	} else {
+		prefix = 'projects/';
 	}
-	async fetch_issue(url: string): Promise<GitLabIssue> {
-		if (!url.includes('gitlab')) {
-			throw IssueFetchError.CANT_HANDLE;
-		}
 
-		const matches = /gitlab\.com\/(?<project_path>.*)\/-\/issues\/(?<issue_number>\d*)/.exec(url);
-		if (matches === null) {
-			console.error('does not matches');
-			throw IssueFetchError.CANT_HANDLE;
-		}
-		const groups = matches.groups;
-		if (groups === undefined) {
-			console.error('does not have groups');
-			throw IssueFetchError.CANT_HANDLE;
-		}
+	const matches = /\/(?<project_path>.*)\/-\/issues/.exec(pathname_for_regex);
+	if (matches === null) {
+		throw Error('does not match');
+	}
+	const groups = matches.groups;
+	if (groups === undefined) {
+		throw Error('does not have groups');
+	}
+	const project_path = groups.project_path.replaceAll('/', '%2F');
+	const params = [
+		['per_page', '100'],
+		['sort', 'asc'] // sort ascending, so that issues that appear during fetching are not accidentally lost due to pagination
+	];
 
-		const project_path = groups.project_path.replaceAll('/', '%2F');
-		const issue_number = groups.issue_number;
-		console.log('project_path', project_path);
-		const init = { headers: { Authorization: `Bearer ${this.access_token}` } };
+	let labels = _url.searchParams.getAll('label_name[]');
+	if (labels.length > 0) {
+		let label_names = labels[0];
+		for (let i = 1; i < labels.length; ++i) {
+			label_names = label_names.concat(',', labels[i]);
+		}
+		params.push(['labels', label_names]);
+	}
 
-		const data = await fetch(
-			`https://gitlab.com/api/v4/projects/${project_path}/issues/${issue_number}`,
+	const result: GitLabIssue[] = [];
+	const init = { headers: { Authorization: `Bearer ${access_token}` } };
+	let finished = false;
+	let i = 0;
+	while (!finished) {
+		const issues: { web_url: string }[] = await fetch(
+			`https://gitlab.com/api/v4/${prefix}${project_path}/issues?${new URLSearchParams(params)}&page=${i}`,
 			init
 		).then((res) => {
 			if (res.ok) {
 				return res.json();
 			} else {
 				console.error('failed to fetch issue: status', res.status, res.statusText);
-				throw IssueFetchError.FETCH_FAILED;
+				throw Error('failed fetching');
 			}
 		});
-		const project_id = data.project_id;
-		const issue_iid = data.iid;
-		const links: { web_url: string; link_type: string }[] = await fetch(
-			`https://gitlab.com/api/v4/projects/${project_id}/issues/${issue_iid}/links`,
-			init
-		).then((res) => {
-			if (res.ok) {
-				return res.json();
-			} else {
-				console.error('failed to fetch issue links: status', res.status, res.statusText, res.url);
-				throw IssueFetchError.FETCH_FAILED;
-			}
+		issues.forEach((issue) => {
+			result.push(new GitLabIssue(access_token, issue.web_url));
 		});
-
-		const is_blocked_by: string[] = [];
-		const blocks: string[] = [];
-		const relates_to: string[] = [];
-		links.forEach((link) => {
-			switch (link.link_type) {
-				case 'relates_to':
-					relates_to.push(link.web_url);
-					break;
-				case 'blocks':
-					blocks.push(link.web_url);
-					break;
-				case 'is_blocked_by':
-					is_blocked_by.push(link.web_url);
-					break;
-			}
-		});
-		return new GitLabIssue(url, new IssueData(is_blocked_by, blocks, relates_to));
+		if (issues.length < 100) {
+			finished = true;
+		}
+		i += 1;
 	}
+
+	/**/
+	return result;
 }
 
-export async function new_gitlab_handler(access_token: string): Promise<GitLabHandler> {
-	return new GitLabHandler(access_token);
+export function fetch_gitlab_tasks(
+	access_token: string,
+	url: string
+): GitLabIssue | Promise<GitLabIssue[]> {
+	const pathname = new URL(url).pathname;
+	const last = pathname.substring(pathname.lastIndexOf('/') + 1);
+	if (last === '' || last === 'issues') {
+		return fetch_multiple_issues(access_token, url);
+	} else {
+		return new GitLabIssue(access_token, url);
+	}
 }

@@ -1,4 +1,4 @@
-import { type Issue } from '$lib/issue';
+import { Status, type Task } from '$lib/task';
 
 export class Node {
 	url: string; // issue data = successful, null = broken link, undefined = not fetched yet
@@ -79,29 +79,28 @@ export class Graph {
 	}
 }
 
-export function construct_graph(issues: Map<string, Issue | null | Error>): Graph {
-	function node_from_issue(issue: Issue) {
-		return new Node(issue.url(), issue.graph_label(), issue.table_label(), '');
-	}
-	function node_from_null(url: string) {
-		return new Node(url, url, url, '❓');
-	}
-	function node_from_error(url: string) {
-		return new Node(url, url, url, '❌');
-	}
-	const nodes = Array.from(issues, (pair) =>
-		pair[1] === null
-			? node_from_null(pair[0])
-			: pair[1] instanceof Error
-				? node_from_error(pair[0])
-				: node_from_issue(pair[1])
-	);
+export function construct_graph(tasks: Map<string, Task>): Graph {
+	const nodes = Array.from(tasks.values()).map((task) => {
+		let status = '';
+		switch (task.fetched()) {
+			case Status.FETCHED:
+				break;
+			case Status.FETCH_FAILED:
+				status = '❌';
+				break;
+			case Status.TO_BE_FETCHED:
+				status = '❓';
+				break;
+			default:
+				console.error('unknown status:', task.fetched());
+		}
+		return new Node(task.url(), task.graph_label(), task.table_label(), status);
+	});
 	const edges: Edge[] = [];
 	let i = 0;
-	issues.forEach((issue) => {
-		if (issue !== null && !(issue instanceof Error)) {
-			const issue_data = issue.data();
-			issue_data.is_blocked_by.forEach((b_url) => {
+	tasks.forEach((task) => {
+		if (task !== null && !(task instanceof Error)) {
+			task.is_blocked_by().forEach((b_url) => {
 				const b_index = nodes.findIndex((n) => b_url == n.url);
 				if (b_index < 0) {
 					console.error(`is_blocked_by url not found in nodes; url: ${b_url}`);
@@ -122,18 +121,18 @@ export function construct_graph(issues: Map<string, Issue | null | Error>): Grap
 					}
 				}
 			});
-			issue_data.blocks.forEach((b_url) => {
+			task.blocks().forEach((b_url) => {
 				const b_index = nodes.findIndex((n) => b_url == n.url);
 				if (b_index < 0) {
-					console.error(`is_blocked_by url not found in nodes; url: ${b_url}`);
+					console.error(`blocks url not found in nodes; url: ${b_url}`);
 				} else {
 					const circular_dependency_edge_index = edges.findIndex(
-						(e) => e.a === i && e.b === b_index
+						(e) => e.a === b_index && e.b === i
 					);
 					if (circular_dependency_edge_index < 0) {
 						const existing_edge_index = edges.findIndex((e) => e.a === b_index && e.b === i);
 						if (existing_edge_index < 0) {
-							edges.push(new Edge(b_index, i, EdgeType.DependsOn));
+							edges.push(new Edge(i, b_index, EdgeType.DependsOn));
 						} else {
 							// override relates to with depends on
 							edges[existing_edge_index] = new Edge(b_index, i, EdgeType.DependsOn);
@@ -143,7 +142,7 @@ export function construct_graph(issues: Map<string, Issue | null | Error>): Grap
 					}
 				}
 			});
-			issue_data.relates_to.forEach((b_url) => {
+			task.relates_to().forEach((b_url) => {
 				const b_index = nodes.findIndex((n) => b_url == n.url);
 				if (b_index < 0) {
 					console.error(`relates_to url not found in nodes; url: ${b_url}`);
