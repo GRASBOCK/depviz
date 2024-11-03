@@ -8,7 +8,7 @@ import {
 import { ACCESS_TOKEN } from '$env/static/private';
 
 describe('fetch issuedata', async () => {
-	const issue = await new_github_issue(
+	const issue = new_github_issue(
 		ACCESS_TOKEN,
 		'https://github.com/octocat/Hello-World/issues/3094'
 	);

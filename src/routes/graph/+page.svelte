@@ -3,7 +3,7 @@
 	import DepViz from '$lib/DepViz.svelte';
 	import { onMount } from 'svelte';
 	import { construct_graph, Graph } from '$lib/graph';
-	import { distinguish, type Task } from '$lib/task';
+	import { distinguish, Status, type Task } from '$lib/task';
 
 	let graph: Graph;
 	const access_tokens = new Map<string, string>();
@@ -30,7 +30,7 @@
 		loading_text = 'updating issue graph';
 		const promises: Promise<void>[] = [];
 		tasks.forEach((task) => {
-			if (!task.fetched()) {
+			if (task.fetched() === Status.TO_BE_FETCHED) {
 				promises.push(task.fetch());
 			}
 		});
@@ -42,7 +42,10 @@
 			graph = construct_graph(tasks);
 		});
 		await loading;
-		if (Array.from(tasks.values()).filter((task) => !task.fetched()).length > 0) {
+		if (
+			Array.from(tasks.values()).filter((task) => task.fetched() === Status.TO_BE_FETCHED).length >
+			0
+		) {
 			new Promise((resolve) => setTimeout(resolve, 1)).then(update);
 		} else {
 			new Promise((resolve) => setTimeout(resolve, 10000)).then(update);

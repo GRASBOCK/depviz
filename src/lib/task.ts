@@ -1,18 +1,20 @@
 import type { Octokit } from 'octokit';
 import { fetch_gitlab_tasks, is_gitlab } from './gitlab';
+import { fetch_github_tasks, is_github, new_github_issue } from './github';
 
 export let octokit: Octokit;
 
 export enum Status {
-	CANT_HANDLE = 'Cannot handle the url of this issue. Broken URL or use different handler',
-	FETCH_FAILED = 'Failed fetching issue'
+	FETCHED = 'The issue has been successfully fetched',
+	FETCH_FAILED = 'Failed fetching issue',
+	TO_BE_FETCHED = 'Issue has been registered, but still has to be fetched'
 }
 
 export interface Task {
 	url(): string;
 
 	fetch(): Promise<void>;
-	fetched(): boolean;
+	fetched(): Status;
 
 	graph_label(): string;
 	table_label(): string;
@@ -31,6 +33,14 @@ export function distinguish(
 			throw Error('gitlab access token is not defined');
 		}
 		return fetch_gitlab_tasks(gitlab_access_token, url);
+	}
+
+	if (is_github(url)) {
+		const github_access_token = access_tokens.get('github');
+		if (github_access_token === undefined) {
+			throw Error('gitlab access token is not defined');
+		}
+		return fetch_github_tasks(github_access_token, url);
 	}
 
 	throw Error('not yet implemented; no handler');

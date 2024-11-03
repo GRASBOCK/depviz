@@ -1,4 +1,4 @@
-import { type Task } from '$lib/task';
+import { Status, type Task } from '$lib/task';
 
 export class Node {
 	url: string; // issue data = successful, null = broken link, undefined = not fetched yet
@@ -81,7 +81,20 @@ export class Graph {
 
 export function construct_graph(tasks: Map<string, Task>): Graph {
 	const nodes = Array.from(tasks.values()).map((task) => {
-		return new Node(task.url(), task.graph_label(), task.table_label(), task.fetched() ? '' : '❓'); // todo, also add '❌'
+		let status = '';
+		switch (task.fetched()) {
+			case Status.FETCHED:
+				break;
+			case Status.FETCH_FAILED:
+				status = '❌';
+				break;
+			case Status.TO_BE_FETCHED:
+				status = '❓';
+				break;
+			default:
+				console.error('unknown status:', task.fetched());
+		}
+		return new Node(task.url(), task.graph_label(), task.table_label(), status);
 	});
 	const edges: Edge[] = [];
 	let i = 0;

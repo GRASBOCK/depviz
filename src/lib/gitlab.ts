@@ -1,3 +1,5 @@
+import { Status } from './task';
+
 export const GITHUB_HOSTNAME: string = 'github';
 
 export function is_gitlab(url: string): boolean {
@@ -10,7 +12,7 @@ export function is_gitlab(url: string): boolean {
 
 export class GitLabIssue {
 	_url: URL;
-	_fetched: boolean = false;
+	_fetched: Status = Status.TO_BE_FETCHED;
 	_status_text: string = 'unfetched';
 	_blocks: string[] = [];
 	_is_blocked_by: string[] = [];
@@ -38,7 +40,7 @@ export class GitLabIssue {
 		this.issue_number = groups.issue_number;
 	}
 
-	fetched(): boolean {
+	fetched(): Status {
 		return this._fetched;
 	}
 
@@ -76,6 +78,7 @@ export class GitLabIssue {
 				return res.json();
 			} else {
 				console.error('failed to fetch issue: status', res.status, res.statusText);
+				this._fetched = Status.FETCH_FAILED;
 				throw Error("Can't fetch");
 			}
 		});
@@ -89,6 +92,7 @@ export class GitLabIssue {
 				return res.json();
 			} else {
 				console.error('failed to fetch issue links: status', res.status, res.statusText, res.url);
+				this._fetched = Status.FETCH_FAILED;
 				throw Error("Can't fetch");
 			}
 		});
@@ -112,7 +116,7 @@ export class GitLabIssue {
 		this._blocks = blocks;
 		this._is_blocked_by = is_blocked_by;
 		this._relates_to = relates_to;
-		this._fetched = true;
+		this._fetched = Status.FETCHED;
 	}
 }
 

@@ -1,6 +1,15 @@
 import { Octokit } from 'octokit';
+import { Status } from './task';
 
 export const GITHUB_HOSTNAME: string = 'github';
+
+export function is_github(url: string): boolean {
+	if (url.includes('github')) {
+		return true;
+	} else {
+		return false;
+	}
+}
 
 export function extract_issue_numbers(line: string): number[] {
 	const matches = [...line.matchAll(/#\d+/g)];
@@ -54,7 +63,7 @@ function url_from_path(owner: string, repo: string, number: number) {
 export class GitHubIssue {
 	octokit: Octokit;
 	_url: URL;
-	_fetched: boolean = false;
+	_fetched: Status = Status.TO_BE_FETCHED;
 	_status_text: string = 'unfetched';
 	_blocks: string[] = [];
 	_is_blocked_by: string[] = [];
@@ -83,7 +92,7 @@ export class GitHubIssue {
 		return this._url.href;
 	}
 
-	fetched(): boolean {
+	fetched(): Status {
 		return this._fetched;
 	}
 
@@ -110,6 +119,7 @@ export class GitHubIssue {
 			.get({ owner: this.owner, repo: this.repo, issue_number: this.number })
 			.then(({ data: issue }) => {})
 			.catch(() => {
+				this._fetched = Status.FETCH_FAILED;
 				throw Error("Can't fetch");
 			});
 		const is_blocked_by: string[] = [];
@@ -171,11 +181,18 @@ export class GitHubIssue {
 		this._blocks = blocks;
 		this._is_blocked_by = is_blocked_by;
 		this._relates_to = relates_to;
+		this._fetched = Status.FETCHED;
 	}
 }
 
-export async function new_github_issue(access_token: string, url: string): Promise<GitHubIssue> {
+export function new_github_issue(access_token: string, url: string): GitHubIssue {
 	const octokit = new Octokit({ auth: access_token });
-	await octokit.rest.users.getAuthenticated();
 	return new GitHubIssue(octokit, url);
+}
+
+export function fetch_github_tasks(
+	access_token: string,
+	url: string
+): GitHubIssue | Promise<GitHubIssue[]> {
+	return new_github_issue(access_token, url);
 }
