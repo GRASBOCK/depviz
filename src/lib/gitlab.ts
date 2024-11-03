@@ -17,6 +17,7 @@ export class GitLabIssue {
 	_blocks: string[] = [];
 	_is_blocked_by: string[] = [];
 	_relates_to: string[] = [];
+	_completed: boolean = false
 	project_path: string;
 	issue_number: string;
 	access_token: string;
@@ -42,6 +43,10 @@ export class GitLabIssue {
 
 	fetched(): Status {
 		return this._fetched;
+	}
+
+	completed(): boolean{
+		return this._completed;
 	}
 
 	url() {
@@ -82,6 +87,7 @@ export class GitLabIssue {
 				throw Error("Can't fetch");
 			}
 		});
+		this._completed = data.closed_at !== null ? true : false;
 		const project_id = data.project_id;
 		const issue_iid = data.iid;
 		const links: { web_url: string; link_type: string }[] = await fetch(

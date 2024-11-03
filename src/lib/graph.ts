@@ -5,12 +5,14 @@ export class Node {
 	graph_label: string;
 	table_label: string;
 	status: string;
+	completed: boolean;
 
-	constructor(url: string, graph_label: string, table_label: string, status: string) {
+	constructor(url: string, graph_label: string, table_label: string, status: string, completed: boolean) {
 		this.url = url;
 		this.table_label = table_label;
 		this.graph_label = graph_label;
 		this.status = status;
+		this.completed = completed;
 	}
 
 	static compare(a: Node, b: Node) {
@@ -94,7 +96,7 @@ export function construct_graph(tasks: Map<string, Task>): Graph {
 			default:
 				console.error('unknown status:', task.fetched());
 		}
-		return new Node(task.url(), task.graph_label(), task.table_label(), status);
+		return new Node(task.url(), task.graph_label(), task.table_label(), status, task.completed());
 	});
 	const edges: Edge[] = [];
 	let i = 0;

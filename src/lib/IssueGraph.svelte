@@ -32,7 +32,8 @@
 		// create an array with nodes
 		var nodes = new DataSet(
 			graph.nodes.map((n, ni) => {
-				return { id: ni, label: n.graph_label + n.status };
+
+				return { id: ni, label: n.graph_label + n.status, color: {border: n.completed ? '#6d9eeb': '#93c47d', background: n.completed ? '#c9daf8': '#d9ead3'} };
 			})
 		);
 

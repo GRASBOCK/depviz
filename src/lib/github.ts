@@ -68,9 +68,11 @@ export class GitHubIssue {
 	_blocks: string[] = [];
 	_is_blocked_by: string[] = [];
 	_relates_to: string[] = [];
+	_completed: boolean = false
 	owner: string;
 	repo: string;
 	number: number;
+	
 
 	constructor(octokit: Octokit, url: string) {
 		this.octokit = octokit;
@@ -96,6 +98,10 @@ export class GitHubIssue {
 		return this._fetched;
 	}
 
+	completed(): boolean{
+		return this._completed;
+	}
+
 	table_label(): string {
 		return `${this.owner} ${this.repo} #${this.number}`;
 	}
@@ -117,7 +123,9 @@ export class GitHubIssue {
 	async fetch(): Promise<void> {
 		await this.octokit.rest.issues
 			.get({ owner: this.owner, repo: this.repo, issue_number: this.number })
-			.then(({ data: issue }) => {})
+			.then(({ data: issue }) => {
+				this._completed = issue.closed_at !== null ? true : false;
+			})
 			.catch(() => {
 				this._fetched = Status.FETCH_FAILED;
 				throw Error("Can't fetch");
