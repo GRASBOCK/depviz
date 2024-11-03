@@ -9,7 +9,7 @@ export function is_gitlab(url: string): boolean {
 }
 
 export class GitLabIssue {
-	_url: string;
+	_url: URL;
 	_fetched: boolean = false;
 	_status_text: string = 'unfetched';
 	_blocks: string[] = [];
@@ -20,19 +20,14 @@ export class GitLabIssue {
 	access_token: string;
 
 	constructor(access_token: string, url: string) {
-		this._url = url;
+		this._url = new URL(url);
 		this.access_token = access_token;
 
-		if (!is_gitlab(this._url)) {
-			throw Error("Can't handle");
-		}
-
-		const matches = /gitlab\.com\/(?<project_path>.*)\/-\/issues\/(?<issue_number>\d*)/.exec(
-			this._url
+		const matches = /\/(?<project_path>.*)\/-\/(issues|work_items)\/(?<issue_number>\d*)/.exec(
+			this._url.pathname
 		);
 		if (matches === null) {
-			console.error('does not matches');
-			throw Error('not a gitlab project issue');
+			throw Error(`does not match ${this._url}`);
 		}
 		const groups = matches.groups;
 		if (groups === undefined) {
@@ -48,7 +43,7 @@ export class GitLabIssue {
 	}
 
 	url() {
-		return this._url;
+		return this._url.href;
 	}
 
 	table_label(): string {
@@ -174,39 +169,81 @@ export async function new_gitlab_issue(access_token: string, url: string): Promi
 	return new GitLabIssue(access_token, url);
 }
 
-export async function fetch_group_issues(
+export async function fetch_multiple_issues(
 	access_token: string,
 	url: string
 ): Promise<GitLabIssue[]> {
 	const _url = new URL(url);
-	console.log(_url.pathname);
-	/*
-	const project_path = project_path.replaceAll('/', '%2F');
-	const issue_number = this.issue_number;
-	console.log('project_path', project_path);
-	const init = { headers: { Authorization: `Bearer ${access_token}` } };
 
-	const data = await fetch(
-		`https://gitlab.com/api/v4/projects/${project_path}/issues/${issue_number}`,
-		init
-	).then((res) => {
-		if (res.ok) {
-			return res.json();
-		} else {
-			console.error('failed to fetch issue: status', res.status, res.statusText);
-			throw IssueFetchError.FETCH_FAILED;
+	let prefix = '';
+	let pathname_for_regex = _url.pathname;
+	if (_url.pathname.includes('groups')) {
+		prefix = 'groups/';
+		pathname_for_regex = pathname_for_regex.replace('/groups', '');
+	} else {
+		prefix = 'projects/';
+	}
+
+	const matches = /\/(?<project_path>.*)\/-\/issues/.exec(pathname_for_regex);
+	if (matches === null) {
+		throw Error('does not match');
+	}
+	const groups = matches.groups;
+	if (groups === undefined) {
+		throw Error('does not have groups');
+	}
+	const project_path = groups.project_path.replaceAll('/', '%2F');
+	const params = [
+		['per_page', '100'],
+		['sort', 'asc'] // sort ascending, so that issues that appear during fetching are not accidentally lost due to pagination
+	];
+
+	let labels = _url.searchParams.getAll('label_name[]');
+	if (labels.length > 0) {
+		let label_names = labels[0];
+		for (let i = 1; i < labels.length; ++i) {
+			label_names = label_names.concat(',', labels[i]);
 		}
-	});
-	*/
-	return Promise.resolve(() => []);
+		params.push(['labels', label_names]);
+	}
+
+	const result: GitLabIssue[] = [];
+	const init = { headers: { Authorization: `Bearer ${access_token}` } };
+	let finished = false;
+	let i = 0;
+	while (!finished) {
+		const issues: { web_url: string }[] = await fetch(
+			`https://gitlab.com/api/v4/${prefix}${project_path}/issues?${new URLSearchParams(params)}&page=${i}`,
+			init
+		).then((res) => {
+			if (res.ok) {
+				return res.json();
+			} else {
+				console.error('failed to fetch issue: status', res.status, res.statusText);
+				throw Error('failed fetching');
+			}
+		});
+		issues.forEach((issue) => {
+			result.push(new GitLabIssue(access_token, issue.web_url));
+		});
+		if (issues.length < 100) {
+			finished = true;
+		}
+		i += 1;
+	}
+
+	/**/
+	return result;
 }
 
 export function fetch_gitlab_tasks(
 	access_token: string,
 	url: string
 ): GitLabIssue | Promise<GitLabIssue[]> {
-	if (url.includes('groups')) {
-		return fetch_group_issues(access_token, url);
+	const pathname = new URL(url).pathname;
+	const last = pathname.substring(pathname.lastIndexOf('/') + 1);
+	if (last === '' || last === 'issues') {
+		return fetch_multiple_issues(access_token, url);
 	} else {
 		return new GitLabIssue(access_token, url);
 	}

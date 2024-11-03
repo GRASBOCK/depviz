@@ -67,12 +67,16 @@
 				if (result instanceof Promise) {
 					const p = result.then((new_tasks) => {
 						new_tasks.forEach((task) => {
-							tasks.set(url, task);
+							if (!tasks.has(task.url())) {
+								tasks.set(task.url(), task);
+							}
 						});
 					});
 					promises.push(p);
 				} else {
-					tasks.set(url, result);
+					if (!tasks.has(result.url())) {
+						tasks.set(result.url(), result);
+					}
 				}
 			});
 			loading = Promise.all(promises).then(() => {

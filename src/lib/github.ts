@@ -53,7 +53,7 @@ function url_from_path(owner: string, repo: string, number: number) {
 
 export class GitHubIssue {
 	octokit: Octokit;
-	_url: string;
+	_url: URL;
 	_fetched: boolean = false;
 	_status_text: string = 'unfetched';
 	_blocks: string[] = [];
@@ -65,8 +65,8 @@ export class GitHubIssue {
 
 	constructor(octokit: Octokit, url: string) {
 		this.octokit = octokit;
-		this._url = url;
-		if (!this._url.includes('github')) {
+		this._url = new URL(url);
+		if (!this._url.host.includes('github')) {
 			throw Error("Can't handle");
 		}
 		const path = new URL(this._url).pathname.split('/');
@@ -79,8 +79,8 @@ export class GitHubIssue {
 		this.number = Number(components[4]);
 	}
 
-	url() {
-		return this._url;
+	url(): string {
+		return this._url.href;
 	}
 
 	fetched(): boolean {
