@@ -17,7 +17,7 @@ export class GitLabIssue {
 	_blocks: string[] = [];
 	_is_blocked_by: string[] = [];
 	_relates_to: string[] = [];
-	_completed: boolean = false
+	_completed: boolean = false;
 	project_path: string;
 	issue_number: string;
 	access_token: string;
@@ -45,7 +45,7 @@ export class GitLabIssue {
 		return this._fetched;
 	}
 
-	completed(): boolean{
+	completed(): boolean {
 		return this._completed;
 	}
 

@@ -15,7 +15,7 @@ export interface Task {
 
 	fetch(): Promise<void>;
 	fetched(): Status;
-	
+
 	completed(): boolean;
 	graph_label(): string;
 	table_label(): string;

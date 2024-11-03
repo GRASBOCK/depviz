@@ -7,7 +7,13 @@ export class Node {
 	status: string;
 	completed: boolean;
 
-	constructor(url: string, graph_label: string, table_label: string, status: string, completed: boolean) {
+	constructor(
+		url: string,
+		graph_label: string,
+		table_label: string,
+		status: string,
+		completed: boolean
+	) {
 		this.url = url;
 		this.table_label = table_label;
 		this.graph_label = graph_label;

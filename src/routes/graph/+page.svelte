@@ -48,7 +48,7 @@
 		) {
 			new Promise((resolve) => setTimeout(resolve, 1)).then(update);
 		} else {
-			new Promise((resolve) => setTimeout(resolve, 1000*60)).then(update);
+			new Promise((resolve) => setTimeout(resolve, 1000 * 60)).then(update);
 		}
 	}
 	onMount(async () => {

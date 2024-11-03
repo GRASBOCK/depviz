@@ -68,11 +68,10 @@ export class GitHubIssue {
 	_blocks: string[] = [];
 	_is_blocked_by: string[] = [];
 	_relates_to: string[] = [];
-	_completed: boolean = false
+	_completed: boolean = false;
 	owner: string;
 	repo: string;
 	number: number;
-	
 
 	constructor(octokit: Octokit, url: string) {
 		this.octokit = octokit;
@@ -98,7 +97,7 @@ export class GitHubIssue {
 		return this._fetched;
 	}
 
-	completed(): boolean{
+	completed(): boolean {
 		return this._completed;
 	}
 
