@@ -3,21 +3,19 @@ import {
 	extract_issue_numbers,
 	extract_issue_urls,
 	extract_dependency_lines,
-	GitHubHandler
+	new_github_issue
 } from '$lib/github';
-import { Octokit } from 'octokit';
 import { ACCESS_TOKEN } from '$env/static/private';
 
 describe('fetch issuedata', async () => {
-	const octokit = new Octokit({ auth: ACCESS_TOKEN });
-	const {
-		data: { login }
-	} = await octokit.rest.users.getAuthenticated();
-	const client = new GitHubHandler(octokit);
+	const issue = await new_github_issue(
+		ACCESS_TOKEN,
+		'https://github.com/octocat/Hello-World/issues/3094'
+	);
 
-	const issuedata = await client.fetch_issue('https://github.com/octocat/Hello-World/issues/3094');
+	await issue.fetch();
 	it('issuedata exists', () => {
-		expect(issuedata);
+		expect(issue.fetched() == true);
 	});
 
 	it('issue dependencies', () => {
@@ -28,12 +26,12 @@ describe('fetch issuedata', async () => {
 			'https://github.com/octocat/Hello-World/issues/3043',
 			'https://github.com/octocat/Spoon-Knife/issues/33081'
 		];
-		expect(is_blocked_by.sort()).toEqual(issuedata!.is_blocked_by.sort());
+		expect(is_blocked_by.sort()).toEqual(issue!.is_blocked_by().sort());
 		const relates_to = [
 			'https://github.com/octocat/Hello-World/issues/3130',
 			'https://github.com/octocat/Hello-World/issues/3095'
 		];
-		expect(relates_to.sort()).toEqual(issuedata!.relates_to.sort());
+		expect(relates_to.sort()).toEqual(issue!.relates_to().sort());
 	});
 });
 

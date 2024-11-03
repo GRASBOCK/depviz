@@ -1,6 +1,4 @@
 import { Octokit } from 'octokit';
-import { IssueData } from '$lib/issue';
-import { IssueFetchError } from './client';
 
 export const GITHUB_HOSTNAME: string = 'github';
 
@@ -54,78 +52,76 @@ function url_from_path(owner: string, repo: string, number: number) {
 }
 
 export class GitHubIssue {
+	octokit: Octokit;
 	_url: string;
-	_data: IssueData; // issue data = successful, null = broken link, undefined = not fetched yet
+	_fetched: boolean = false;
+	_status_text: string = 'unfetched';
+	_blocks: string[] = [];
+	_is_blocked_by: string[] = [];
+	_relates_to: string[] = [];
+	owner: string;
+	repo: string;
+	number: number;
 
-	constructor(url: string, data: IssueData) {
+	constructor(octokit: Octokit, url: string) {
+		this.octokit = octokit;
 		this._url = url;
-		this._data = data;
+		if (!this._url.includes('github')) {
+			throw Error("Can't handle");
+		}
+		const path = new URL(this._url).pathname.split('/');
+		if (path.length < 4) {
+			throw Error("Can't handle");
+		}
+		const components = new URL(this._url).pathname.split('/');
+		this.owner = components[1];
+		this.repo = components[2];
+		this.number = Number(components[4]);
 	}
 
 	url() {
 		return this._url;
 	}
 
-	data() {
-		return this._data;
+	fetched(): boolean {
+		return this._fetched;
 	}
 
 	table_label(): string {
-		const url = new URL(this._url);
-		const components = url.pathname.split('/');
-		const owner = components[1];
-		const repo = components[2];
-		const number = components[4];
-		return `${owner} ${repo} #${number}`;
+		return `${this.owner} ${this.repo} #${this.number}`;
 	}
 
 	graph_label() {
-		const url = new URL(this._url);
-		const components = url.pathname.split('/');
-		const owner = components[1];
-		const repo = components[2];
-		const number = components[4];
-		return `${owner}\n${repo}\n#${number}`;
+		return `${this.owner}\n${this.repo}\n#${this.number}`;
 	}
 
 	is_blocked_by(): string[] {
-		return this._data.is_blocked_by;
+		return this._is_blocked_by;
 	}
 	relates_to(): string[] {
-		return this._data.relates_to;
+		return this._relates_to;
 	}
 	blocks(): string[] {
-		return this._data.blocks;
+		return this._blocks;
 	}
-}
 
-export class GitHubHandler {
-	octokit: Octokit;
-	constructor(octokit: Octokit) {
-		this.octokit = octokit;
-	}
-	async fetch_issue(url: string): Promise<GitHubIssue> {
-		if (!url.includes('github')) {
-			throw IssueFetchError.CANT_HANDLE;
-		}
-		const path = new URL(url).pathname.split('/');
-		if (path.length < 4) {
-			throw IssueFetchError.CANT_HANDLE;
-		}
-		const owner = path[1];
-		const repo = path[2];
-		const issue_number = Number(path[4]);
-		const issue_data = await this.octokit.rest.issues
-			.get({ owner: owner, repo: repo, issue_number: issue_number })
-			.then(({ data: issue }) => new IssueData())
+	async fetch(): Promise<void> {
+		await this.octokit.rest.issues
+			.get({ owner: this.owner, repo: this.repo, issue_number: this.number })
+			.then(({ data: issue }) => {})
 			.catch(() => {
-				throw IssueFetchError.FETCH_FAILED;
+				throw Error("Can't fetch");
 			});
 		const is_blocked_by: string[] = [];
 		const blocks: string[] = [];
 		const relates_to: string[] = [];
 		await this.octokit.rest.issues
-			.listComments({ owner: owner, repo: repo, issue_number: issue_number, per_page: 100 })
+			.listComments({
+				owner: this.owner,
+				repo: this.repo,
+				issue_number: this.number,
+				per_page: 100
+			})
 			.then(({ data }) => {
 				for (const { body } of data) {
 					if (body === undefined) {
@@ -134,21 +130,21 @@ export class GitHubHandler {
 					const dep_lines = extract_dependency_lines(body);
 					for (const l of dep_lines) {
 						extract_issue_numbers(l).forEach((num) =>
-							is_blocked_by.push(url_from_path(owner, repo, num))
+							is_blocked_by.push(url_from_path(this.owner, this.repo, num))
 						);
 						extract_issue_urls(l).forEach((i) => is_blocked_by.push(i));
 					}
 					extract_issue_numbers(body).forEach((num) =>
-						relates_to.push(url_from_path(owner, repo, num))
+						relates_to.push(url_from_path(this.owner, this.repo, num))
 					);
 					extract_issue_urls(body).forEach((i) => relates_to.push(i));
 				}
 			});
 		await this.octokit.rest.issues
 			.listEventsForTimeline({
-				owner: owner,
-				repo: repo,
-				issue_number: issue_number,
+				owner: this.owner,
+				repo: this.repo,
+				issue_number: this.number,
 				per_page: 100
 			})
 			.then(({ data }) => {
@@ -172,15 +168,14 @@ export class GitHubHandler {
 					}
 				});
 			});
-		issue_data.is_blocked_by = Array.from(new Set(is_blocked_by));
-		issue_data.blocks = Array.from(new Set(blocks));
-		issue_data.relates_to = Array.from(new Set(relates_to));
-		return new GitHubIssue(url, issue_data);
+		this._blocks = blocks;
+		this._is_blocked_by = is_blocked_by;
+		this._relates_to = relates_to;
 	}
 }
 
-export async function new_github_handler(access_token: string): Promise<GitHubHandler> {
+export async function new_github_issue(access_token: string, url: string): Promise<GitHubIssue> {
 	const octokit = new Octokit({ auth: access_token });
 	await octokit.rest.users.getAuthenticated();
-	return new GitHubHandler(octokit);
+	return new GitHubIssue(octokit, url);
 }
