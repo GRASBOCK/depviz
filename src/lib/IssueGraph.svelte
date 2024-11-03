@@ -100,8 +100,8 @@
 			layout: {
 				hierarchical: {
 					direction: directionInput,
-					sortMethod: "directed",
-					shakeTowards: "roots"
+					sortMethod: 'directed',
+					shakeTowards: 'roots'
 				}
 			}
 		};
