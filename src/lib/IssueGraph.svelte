@@ -111,6 +111,12 @@
 					sortMethod: 'directed',
 					shakeTowards: 'roots'
 				}
+			},
+			physics: {
+				hierarchicalRepulsion: {
+					avoidOverlap: 0.6,
+					centralGravity: 0.1,
+				}
 			}
 		};
 		network = new vis.Network(container, data, options);
