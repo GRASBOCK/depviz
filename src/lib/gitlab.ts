@@ -56,7 +56,7 @@ export class GitLabIssue {
 	}
 
 	table_label(): string {
-		if (Status.FETCHED) {
+		if (this.fetched() === Status.FETCHED) {
 			return this.title;
 		} else {
 			return this.project_path.replaceAll('/', ' ') + ' #' + this.issue_number;
@@ -64,7 +64,7 @@ export class GitLabIssue {
 	}
 
 	graph_label() {
-		if (Status.FETCHED) {
+		if (this.fetched() === Status.FETCHED) {
 			return this.title;
 		} else {
 			return this.project_path.replaceAll('/', '\n') + '\n#' + this.issue_number;

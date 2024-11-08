@@ -104,7 +104,7 @@ export class GitHubIssue {
 	}
 
 	table_label(): string {
-		if (Status.FETCHED) {
+		if (this.fetched() === Status.FETCHED) {
 			return this.title;
 		} else {
 			return `${this.owner} ${this.repo} #${this.number}`;
@@ -112,7 +112,7 @@ export class GitHubIssue {
 	}
 
 	graph_label() {
-		if (Status.FETCHED) {
+		if (this.fetched() === Status.FETCHED) {
 			return this.title;
 		} else {
 			return `${this.owner}\n${this.repo}\n#${this.number}`;

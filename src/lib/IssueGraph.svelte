@@ -102,6 +102,7 @@
 				}
 			},
 			nodes: {
+				widthConstraint: {maximum: 150},
 				shape: 'box'
 			},
 			layout: {
