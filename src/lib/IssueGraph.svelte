@@ -114,8 +114,7 @@
 			},
 			physics: {
 				hierarchicalRepulsion: {
-					avoidOverlap: 0.6,
-					centralGravity: 0.1,
+					avoidOverlap: 0.7,
 				}
 			}
 		};
