@@ -89,7 +89,6 @@
 		if (container == null) {
 			return;
 		}
-		var directionInput = 'UD';
 		var options: vis.Options = {
 			interaction: {
 				dragNodes: false
@@ -106,10 +105,11 @@
 				shape: 'box'
 			},
 			layout: {
+				randomSeed: 3,
 				hierarchical: {
-					direction: directionInput,
+					direction: 'UD',
 					sortMethod: 'directed',
-					shakeTowards: 'roots'
+					shakeTowards: 'leaves'
 				}
 			},
 			physics: {
