@@ -101,7 +101,7 @@
 				}
 			},
 			nodes: {
-				widthConstraint: {maximum: 150},
+				widthConstraint: { maximum: 150 },
 				shape: 'box'
 			},
 			layout: {
@@ -114,7 +114,7 @@
 			},
 			physics: {
 				hierarchicalRepulsion: {
-					avoidOverlap: 0.7,
+					avoidOverlap: 0.7
 				}
 			}
 		};
