@@ -21,6 +21,7 @@ export class GitLabIssue {
 	project_path: string;
 	issue_number: string;
 	access_token: string;
+	title: string;
 
 	constructor(access_token: string, url: string) {
 		this._url = new URL(url);
@@ -39,6 +40,7 @@ export class GitLabIssue {
 		}
 		this.project_path = groups.project_path;
 		this.issue_number = groups.issue_number;
+		this.title = url;
 	}
 
 	fetched(): Status {
@@ -54,11 +56,19 @@ export class GitLabIssue {
 	}
 
 	table_label(): string {
-		return this.project_path.replaceAll('/', ' ') + ' #' + this.issue_number;
+		if (this.fetched() === Status.FETCHED) {
+			return this.title;
+		} else {
+			return this.project_path.replaceAll('/', ' ') + ' #' + this.issue_number;
+		}
 	}
 
 	graph_label() {
-		return this.project_path.replaceAll('/', '\n') + '\n#' + this.issue_number;
+		if (this.fetched() === Status.FETCHED) {
+			return this.title;
+		} else {
+			return this.project_path.replaceAll('/', '\n') + '\n#' + this.issue_number;
+		}
 	}
 	is_blocked_by(): string[] {
 		return this._is_blocked_by;
@@ -88,6 +98,7 @@ export class GitLabIssue {
 			}
 		});
 		this._completed = data.closed_at !== null ? true : false;
+		this.title = data.title;
 		const project_id = data.project_id;
 		const issue_iid = data.iid;
 		const links: { web_url: string; link_type: string }[] = await fetch(

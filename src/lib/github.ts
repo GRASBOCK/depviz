@@ -72,6 +72,7 @@ export class GitHubIssue {
 	owner: string;
 	repo: string;
 	number: number;
+	title: string;
 
 	constructor(octokit: Octokit, url: string) {
 		this.octokit = octokit;
@@ -87,6 +88,7 @@ export class GitHubIssue {
 		this.owner = components[1];
 		this.repo = components[2];
 		this.number = Number(components[4]);
+		this.title = url;
 	}
 
 	url(): string {
@@ -102,11 +104,19 @@ export class GitHubIssue {
 	}
 
 	table_label(): string {
-		return `${this.owner} ${this.repo} #${this.number}`;
+		if (this.fetched() === Status.FETCHED) {
+			return this.title;
+		} else {
+			return `${this.owner} ${this.repo} #${this.number}`;
+		}
 	}
 
 	graph_label() {
-		return `${this.owner}\n${this.repo}\n#${this.number}`;
+		if (this.fetched() === Status.FETCHED) {
+			return this.title;
+		} else {
+			return `${this.owner}\n${this.repo}\n#${this.number}`;
+		}
 	}
 
 	is_blocked_by(): string[] {
@@ -124,6 +134,7 @@ export class GitHubIssue {
 			.get({ owner: this.owner, repo: this.repo, issue_number: this.number })
 			.then(({ data: issue }) => {
 				this._completed = issue.closed_at !== null ? true : false;
+				this.title = issue.title;
 			})
 			.catch(() => {
 				this._fetched = Status.FETCH_FAILED;

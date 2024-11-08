@@ -102,6 +102,7 @@
 				}
 			},
 			nodes: {
+				widthConstraint: {maximum: 150},
 				shape: 'box'
 			},
 			layout: {
@@ -109,6 +110,11 @@
 					direction: directionInput,
 					sortMethod: 'directed',
 					shakeTowards: 'roots'
+				}
+			},
+			physics: {
+				hierarchicalRepulsion: {
+					avoidOverlap: 0.7,
 				}
 			}
 		};
